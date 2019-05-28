@@ -7,7 +7,6 @@ use prettytable::{
     Row,
     format::Alignment,
     color,
-    color::Color,
     format,
     Attr,
     Table
@@ -37,7 +36,7 @@ impl FromStr for OutputFormat {
 
 #[derive(Debug, PartialEq)]
 pub enum OutputDetail {
-    Fail,
+    NotOkay,
     All,
 }
 
@@ -45,7 +44,7 @@ impl FromStr for OutputDetail {
     type Err = Error;
     fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_ref() {
-            "fail" => Ok(OutputDetail::Fail),
+            "nok" => Ok(OutputDetail::NotOkay),
             "all" => Ok(OutputDetail::All),
             _ => Err(ErrorKind::InvalidOutputDetail(s.to_string()).into()),
         }
@@ -119,6 +118,9 @@ impl<'a> WpScanAnalysis<'a> {
         table.add_row(result_to_row("WordPress", &self.word_press));
         table.add_row(result_to_row("Main Theme", &self.main_theme));
         for (k,v) in self.plugins.iter() {
+            if output_config.detail == OutputDetail::NotOkay && v.summary() == AnalysisSummary::Ok {
+                continue;
+            }
             let text = format!("Plugin: {}", k);
             table.add_row(result_to_row(text.as_ref(), v));
         }

@@ -32,11 +32,11 @@ struct Args {
         raw(possible_values = r#"&["human", "json", "none"]"#)
     )]
     output_format: OutputFormat,
-    /// Select output detail level for human output
+    /// Select output detail level for human output; all or nok (not ok)
     #[structopt(
         long = "output-detail",
-        default_value = "fail",
-        raw(possible_values = r#"&["fail", "all"]"#)
+        default_value = "nok",
+        raw(possible_values = r#"&["nok", "all"]"#)
     )]
     output_detail: OutputDetail,
     /// Do not use colored output
