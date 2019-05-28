@@ -25,7 +25,7 @@ The project home page currently is *https://github.com/lukaspustina/wpscan-analy
 : wpscan JSON file
 
 --output-detail *output_detail*
-: Select output detail level for human output [default: fail]  [possible values: fail, all]
+: Select output detail level for human output; all or nok (not ok) [default: nok]  [possible values: nok, all]. Please mind that results for WordPress and its main theme are always displayed.
 
 -o, --output *output_format*
 : Select output format [default: human]  [possible values: human, json, none]
