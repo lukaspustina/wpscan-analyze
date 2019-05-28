@@ -49,6 +49,11 @@ The project home page currently is *https://github.com/lukaspustina/wpscan-analy
 : Prints version information.
 
 
+# EXIT STATUS
+
+If wpscan-analyze does not find any issue, then the exit status of the program is 0. The exit states 11, 12, and 13 signal that wpscan-analyze has encountered a vulnerability, an outdated element, or a processing failure, respectively. Any other exit status signals an error.
+
+
 # COPYRIGHT AND LICENSE
 
 Copyright (c) 2019 Lukas Pustina. Licensed under the MIT License. See *https://github.com/lukaspustina/wpscan-analyze/blob/master/LICENSE* for details.

@@ -49,6 +49,14 @@ Silencium; use this for json output.
 .TP
 .B -V, \[en]version
 Prints version information.
+.SH EXIT STATUS
+.PP
+If wpscan-analyze does not find any issue, then the exit status of the
+program is 0.
+The exit states 11, 12, and 13 signal that wpscan-analyze has
+encountered a vulnerability, an outdated element, or a processing
+failure, respectively.
+Any other exit status signals and error.
 .SH COPYRIGHT AND LICENSE
 .PP
 Copyright (c) 2019 Lukas Pustina.

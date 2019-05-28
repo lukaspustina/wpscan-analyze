@@ -3,7 +3,7 @@ use log;
 use wpscan_analyze::{
     FromFile, SanityCheck,
     errors::*,
-    default_analysis, WpScanAnalysis,
+    default_analysis, AnalysisSummary, Summary, WpScanAnalysis,
     WpScan,
     OutputConfig, OutputDetail, OutputFormat,
 };
@@ -114,39 +114,27 @@ fn run_wpscan_analyze<T: AsRef<Path>>(
         error!("Output failed because {}", x);
     }
 
-    /*
     info!("Summarizing");
     if !silent {
         println!(
             "Analyzer result summary: {}={}, {}={}, {}={}",
-            "passed".green(),
-            analyzer_result.pass,
+            "outdated".yellow(),
+            analyzer_result.outdated(),
+            "vulnerabilities".red(),
+            analyzer_result.vulnerabilities(),
             "failed".red(),
-            analyzer_result.fail,
-            "errored".red(),
-            analyzer_result.error,
+            analyzer_result.failed(),
         );
     }
 
-    match analyzer_result {
-        AnalyzerResult {
-            fail: 0, error: 0, ..
-        } => Ok(0),
-        AnalyzerResult {
-            fail: x, error: 0, ..
-        }
-            if x > 0 =>
-        {
-            Ok(11)
-        }
-        AnalyzerResult { error: x, .. } if x > 0 => Ok(12),
-        AnalyzerResult { .. } => {
-            error!("This not possible and just to satisfy the compiler");
-            Ok(13)
-        }
-    }
-    */
-    Ok(-1)
+    let res = match analyzer_result.summary() {
+        AnalysisSummary::Ok => 0,
+        AnalysisSummary::Vulnerable => 11,
+        AnalysisSummary::Outdated => 12,
+        AnalysisSummary::Failed => 13,
+    };
+
+    Ok(res)
 }
 
 fn output(output_config: &OutputConfig, analyzer_result: &WpScanAnalysis) -> Result<usize> {
