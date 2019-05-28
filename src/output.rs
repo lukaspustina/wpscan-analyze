@@ -109,11 +109,11 @@ impl<'a> WpScanAnalysis<'a> {
 
         table.set_titles(Row::new(vec![
             Cell::new("Component"),
+            Cell::new("Version"),
             Cell::new("Version State"),
             Cell::new("Vulnerabilities"),
             Cell::new("Processing Result"),
         ]));
-
 
         table.add_row(result_to_row("WordPress", &self.word_press));
         table.add_row(result_to_row("Main Theme", &self.main_theme));
@@ -129,6 +129,7 @@ impl<'a> WpScanAnalysis<'a> {
 fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
     Row::new(vec![
         Cell::new(name),
+        Cell::new(),
         if result.outdated() {
             Cell::new_align("Outdated", Alignment::CENTER)
                 .with_style(Attr::ForegroundColor(color::RED))
