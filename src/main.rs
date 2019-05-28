@@ -1,11 +1,15 @@
 use clams;
 use log;
-use wpscan_analyze;
+use wpscan_analyze::{
+    errors::*,
+    OutputConfig, OutputDetail, OutputFormat,
+};
 use structopt;
 
 use clams::prelude::*;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
+use std::process;
 
 #[derive(StructOpt, Debug)]
 #[structopt(
@@ -43,7 +47,7 @@ struct Args {
     verbosity: u64,
 }
 
-fn run() -> Result<i32> {
+fn main() -> Result<()> {
     let args = Args::from_args();
     setup("wpscan-analyze", &args);
     debug!("args = {:#?}", args);
@@ -56,11 +60,9 @@ fn run() -> Result<i32> {
 
     run_wpscan_analyze(
         &args.wpscan,
-        &args.mapping,
-        &args.portspec,
         &output_config,
         args.silent,
-    )
+    ).map(|code| process::exit(code))
 }
 
 fn setup(name: &str, args: &Args) {
@@ -92,23 +94,17 @@ fn setup(name: &str, args: &Args) {
 
 fn run_wpscan_analyze<T: AsRef<Path>>(
     wpscan_file: T,
-    mapping_file: T,
-    portspecs_file: T,
     output_config: &OutputConfig,
     silent: bool,
 ) -> Result<i32> {
-    info!("Loading port specification file");
-    let portspecs =
-        PortSpecs::from_file(portspecs_file.as_ref()).chain_err(|| ErrorKind::InvalidFile)?;
-    info!("Loading mappings file");
-    let mapping = Mapping::from_file(mapping_file.as_ref()).chain_err(|| ErrorKind::InvalidFile)?;
+    /*
     info!("Loading wpscan file");
-    let wpscan_run = Run::from_file(wpscan_file.as_ref()).chain_err(|| ErrorKind::InvalidFile)?;
-    info!("Checking wpscan sanity");
-    wpscan_run.is_sane().chain_err(|| ErrorKind::InvalidFile)?;
+    let wpscan_run = WpScan::from_file(wpscan_file.as_ref())?;
+    info!("Checking wpscan results sanity");
+    wpscan_run.is_sane()?;
 
     info!("Analyzing");
-    let analyzer_result = default_analysis(&wpscan_run, &mapping, &portspecs);
+    let analyzer_result = default_analysis(&wpscan_run);
     debug!("{:#?}", analyzer_result);
 
     info!("Outputting results"); // Don't bail just because there is an output problem.
@@ -146,8 +142,11 @@ fn run_wpscan_analyze<T: AsRef<Path>>(
             Ok(13)
         }
     }
+    */
+    Ok(-1)
 }
 
+/*
 fn output(output_config: &OutputConfig, analyzer_result: &AnalyzerResult) -> Result<()> {
     match output_config.format {
         OutputFormat::Human => {
@@ -161,6 +160,7 @@ fn output(output_config: &OutputConfig, analyzer_result: &AnalyzerResult) -> Res
             analyzer_result.output(output_config, &mut writer)
         }
         OutputFormat::None => Ok(()),
-    }.map_err(|e| e.into())
+    }
 }
+*/
 
