@@ -1,0 +1,55 @@
+# NAME
+
+wpscan-analyze -- Analyzes wpscan json output and checks for vulnerabilities.
+
+
+# SYNOPSIS
+
+wpscan-analyze [*options*] *MODULE*
+
+wpscan-analyze --help
+
+wpscan-analyze --version
+
+
+# DESCRIPTION
+
+wpscan-analyze is a CLI tool that analyzes wpscan json output and checks for vulnerabilities.
+
+The project home page currently is *https://github.com/lukaspustina/wpscan-analyze*.
+
+
+# COMMON OPTIONS
+
+-f, --wpscan *wpscan*
+: wpscan JSON file
+
+--output-detail *output_detail*
+: Select output detail level for human output [default: fail]  [possible values: fail, all]
+
+-o, --output *output_format*
+: Select output format [default: human]  [possible values: human, json, none]
+
+-v, --verbose
+: Verbose mode (-v, -vv, -vvv, etc.)
+
+--help
+: Prints help information
+
+
+# LESS COMMON OPTIONS
+
+--no-color
+: Turns off colorful output. Helpful for non-tty usage.
+
+-s, --silent
+: Silencium; use this for json output.
+
+-V, --version
+: Prints version information.
+
+
+# COPYRIGHT AND LICENSE
+
+Copyright (c) 2019 Lukas Pustina. Licensed under the MIT License. See *https://github.com/lukaspustina/wpscan-analyze/blob/master/LICENSE* for details.
+

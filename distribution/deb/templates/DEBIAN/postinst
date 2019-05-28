@@ -1,0 +1,5 @@
+chown root:root /usr/bin/wpscan-analyze
+chmod 755 /usr/bin/wpscan-analyze
+
+mandb
+
