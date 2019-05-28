@@ -1,10 +1,17 @@
-use crate::analyze::WpScanAnalysis;
+use crate::analyze::{AnalyzerResult, WpScanAnalysis};
 use crate::errors::*;
 
 use failure::Fail;
-use prettytable::Cell;
-use prettytable::Row;
-use prettytable::{color, format, Attr, Table};
+use prettytable::{
+    Cell,
+    Row,
+    format::Alignment,
+    color,
+    color::Color,
+    format,
+    Attr,
+    Table
+};
 use serde_json;
 use std::io::Write;
 use std::str::FromStr;
@@ -98,121 +105,48 @@ impl<'a> HumanOutput for WpScanAnalysis<'a> {
 impl<'a> WpScanAnalysis<'a> {
     fn build_table(&self, output_config: &OutputConfig) -> Table {
         let mut table = Table::new();
-        /*
         table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
 
         table.set_titles(Row::new(vec![
-            Cell::new("Host"),
-            Cell::new("Portspec"),
-            Cell::new("Result"),
-            Cell::new("Port"),
-            Cell::new("Port Result"),
-            Cell::new("Failure Reason"),
+            Cell::new("Component"),
+            Cell::new("Version State"),
+            Cell::new("Vulnerabilities"),
+            Cell::new("Processing Result"),
         ]));
 
-        for a in &self.host_analysis_results {
-            if output_config.detail == OutputDetail::Fail && a.summary == HostAnalysisSummary::Pass {
-                continue;
-            }
-            let row = Row::new(vec![
-                Cell::new(ip_addr_to_string(a.ip).as_ref()),
-                Cell::new(a.portspec_name.unwrap_or("")),
-                analysis_result_to_cell(&a.summary),
-                Cell::new(""),
-                Cell::new(""),
-                match a.summary {
-                    HostAnalysisSummary::Error { ref reason } => Cell::new(reason),
-                    _ => Cell::new(""),
-                },
-            ]);
-            table.add_row(row);
 
-            for p in &a.port_results {
-                if let PortAnalysisResult::Pass(_, _) = p {
-                    if output_config.detail == OutputDetail::Fail {
-                        continue;
-                    }
-                }
-                let row = Row::new(vec![
-                    Cell::new(""),
-                    Cell::new(""),
-                    Cell::new(""),
-                    Cell::new(port_analysis_result_to_port_string(&p).as_ref()),
-                    port_analysis_result_to_port_result_cell(&p),
-                    Cell::new(port_analysis_result_to_port_result_reason(&p).as_ref()),
-                ]);
-                table.add_row(row);
-            }
+        table.add_row(result_to_row("WordPress", &self.word_press));
+        table.add_row(result_to_row("Main Theme", &self.main_theme));
+        for (k,v) in self.plugins.iter() {
+            let text = format!("Plugin: {}", k);
+            table.add_row(result_to_row(text.as_ref(), v));
         }
-        */
 
         table
     }
 }
 
-/*
-fn ip_addr_to_string(ip_addr: &IpAddr) -> String {
-    format!("{}", ip_addr)
+fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
+    Row::new(vec![
+        Cell::new(name),
+        if result.outdated() {
+            Cell::new_align("Outdated", Alignment::CENTER)
+                .with_style(Attr::ForegroundColor(color::RED))
+        } else {
+            Cell::new_align("Latest", Alignment::CENTER)
+                .with_style(Attr::ForegroundColor(color::GREEN))
+        },
+        if result.vulnerabilities() > 0 {
+            Cell::new_align(format!("{} vulnerabilities", result.vulnerabilities()).as_ref(), Alignment::CENTER)
+                .with_style(Attr::ForegroundColor(color::RED))
+        } else {
+            Cell::new_align("No vulnerabilities", Alignment::CENTER)
+        },
+        if result.failed() {
+            Cell::new_align("Failed", Alignment::CENTER)
+                .with_style(Attr::ForegroundColor(color::RED))
+        } else {
+            Cell::new_align("Ok", Alignment::CENTER)
+        },
+    ])
 }
-
-fn analysis_result_to_cell(result: &HostAnalysisSummary) -> Cell {
-    match result {
-        HostAnalysisSummary::Pass => Cell::new("Pass").with_style(Attr::ForegroundColor(color::GREEN)),
-        HostAnalysisSummary::Fail => Cell::new("Fail").with_style(Attr::ForegroundColor(color::RED)),
-        HostAnalysisSummary::Error { .. } => {
-            Cell::new("Error").with_style(Attr::ForegroundColor(color::RED))
-        }
-    }
-}
-
-fn port_analysis_result_to_port_string(result: &PortAnalysisResult) -> String {
-    let port = match result {
-        PortAnalysisResult::Pass(x, _) => x,
-        PortAnalysisResult::Fail(x, _) => x,
-        PortAnalysisResult::NotScanned(x) => x,
-        PortAnalysisResult::Unknown(x) => x,
-    };
-    format!("{}", port)
-}
-
-fn port_analysis_result_to_port_result_cell(result: &PortAnalysisResult) -> Cell {
-    match result {
-        PortAnalysisResult::Pass(_, _) => {
-            Cell::new("passed").with_style(Attr::ForegroundColor(color::GREEN))
-        }
-        PortAnalysisResult::Fail(_, _) => {
-            Cell::new("failed").with_style(Attr::ForegroundColor(color::RED))
-        }
-        PortAnalysisResult::NotScanned(_) => {
-            Cell::new("not scanned").with_style(Attr::ForegroundColor(color::YELLOW))
-        }
-        PortAnalysisResult::Unknown(_) => {
-            Cell::new("unknown").with_style(Attr::ForegroundColor(color::RED))
-        }
-    }
-}
-
-fn port_analysis_result_to_port_result_reason(result: &PortAnalysisResult) -> String {
-    match result {
-        PortAnalysisResult::Pass(_, PortAnalysisReason::OpenAndOpen) => "",
-        PortAnalysisResult::Pass(_, PortAnalysisReason::ClosedAndClosed) => "",
-        PortAnalysisResult::Pass(_, PortAnalysisReason::MaybeAndOpen) =>
-            "maybe Open, found Open",
-        PortAnalysisResult::Pass(_, PortAnalysisReason::MaybeAndClosed) =>
-            "maybe Open, found Closed",
-        PortAnalysisResult::Pass(_, _) =>
-            "passed but unexpected result",
-        PortAnalysisResult::Fail(_, PortAnalysisReason::OpenButClosed) => {
-            "expected Open, found Closed"
-        }
-        PortAnalysisResult::Fail(_, PortAnalysisReason::ClosedButOpen) => {
-            "expected Closed, found Open"
-        }
-        PortAnalysisResult::Fail(_, PortAnalysisReason::Unknown) => "unknown",
-        PortAnalysisResult::Fail(_, _) =>
-            "failed because unexpected result",
-        PortAnalysisResult::NotScanned(_) => "",
-        PortAnalysisResult::Unknown(_) => "",
-    }.to_owned()
-}
-*/
