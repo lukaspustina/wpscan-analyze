@@ -1,5 +1,7 @@
+use crate::analyze::AnalyzerResult;
 use crate::errors::*;
 
+use failure::Fail;
 use prettytable::Cell;
 use prettytable::Row;
 use prettytable::{color, format, Attr, Table};
@@ -52,43 +54,44 @@ pub struct OutputConfig {
 }
 
 pub trait JsonOutput {
-    fn output<T: Write>(&self, output_config: &OutputConfig, writer: &mut T) -> Result<()>;
+    fn output<T: Write>(&self, output_config: &OutputConfig, writer: &mut T) -> Result<usize>;
 }
 
 pub trait HumanOutput {
-    fn output<T: Write>(&self, output_config: &OutputConfig, writer: &mut T) -> Result<()>;
-    fn output_tty(&self, output_config: &OutputConfig) -> Result<()>;
+    fn output<T: Write>(&self, output_config: &OutputConfig, writer: &mut T) -> Result<usize>;
+    fn output_tty(&self, output_config: &OutputConfig) -> Result<usize>;
 }
 
-/*
 impl<'a> JsonOutput for AnalyzerResult<'a> {
-    fn output<T: Write>(&self, _: &OutputConfig, writer: &mut T) -> Result<()> {
-        let json_str = serde_json::to_string(self).chain_err(|| ErrorKind::OutputFailed)?;
+    fn output<T: Write>(&self, _: &OutputConfig, writer: &mut T) -> Result<usize> {
+        let json_str = serde_json::to_string(self)
+            .map_err(|e| e.context(ErrorKind::OutputFailed))?;
+        let bytes = json_str.as_bytes();
         writer
-            .write(json_str.as_bytes())
-            .chain_err(|| ErrorKind::OutputFailed)?;
+            .write(bytes)
+            .map_err(|e| e.context(ErrorKind::OutputFailed))?;
 
-        Ok(())
+        Ok(bytes.len())
     }
 }
 
 impl<'a> HumanOutput for AnalyzerResult<'a> {
-    fn output<T: Write>(&self, output_config: &OutputConfig, writer: &mut T) -> Result<()> {
+    fn output<T: Write>(&self, output_config: &OutputConfig, writer: &mut T) -> Result<usize> {
         self.build_table(output_config)
             .print(writer)
-            .chain_err(|| ErrorKind::OutputFailed)
+            .map_err(|e| e.context(ErrorKind::OutputFailed).into())
     }
 
-    fn output_tty(&self, output_config: &OutputConfig) -> Result<()> {
+    fn output_tty(&self, output_config: &OutputConfig) -> Result<usize> {
         if output_config.color {
-            self.build_table(output_config).printstd();
-            Ok(())
+            let len = self.build_table(output_config).printstd();
+            Ok(len)
         } else {
             let stdout = ::std::io::stdout();
             let mut writer = stdout.lock();
             self.build_table(output_config)
                 .print(&mut writer)
-                .chain_err(|| ErrorKind::OutputFailed)
+                .map_err(|e| e.context(ErrorKind::OutputFailed).into())
         }
     }
 }
@@ -96,6 +99,7 @@ impl<'a> HumanOutput for AnalyzerResult<'a> {
 impl<'a> AnalyzerResult<'a> {
     fn build_table(&self, output_config: &OutputConfig) -> Table {
         let mut table = Table::new();
+        /*
         table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
 
         table.set_titles(Row::new(vec![
@@ -141,11 +145,13 @@ impl<'a> AnalyzerResult<'a> {
                 table.add_row(row);
             }
         }
+        */
 
         table
     }
 }
 
+/*
 fn ip_addr_to_string(ip_addr: &IpAddr) -> String {
     format!("{}", ip_addr)
 }

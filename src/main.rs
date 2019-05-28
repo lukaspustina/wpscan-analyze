@@ -2,6 +2,7 @@ use clams;
 use log;
 use wpscan_analyze::{
     errors::*,
+    AnalyzerResult,
     OutputConfig, OutputDetail, OutputFormat,
 };
 use structopt;
@@ -146,8 +147,7 @@ fn run_wpscan_analyze<T: AsRef<Path>>(
     Ok(-1)
 }
 
-/*
-fn output(output_config: &OutputConfig, analyzer_result: &AnalyzerResult) -> Result<()> {
+fn output(output_config: &OutputConfig, analyzer_result: &AnalyzerResult) -> Result<usize> {
     match output_config.format {
         OutputFormat::Human => {
             use wpscan_analyze::output::HumanOutput;
@@ -159,8 +159,6 @@ fn output(output_config: &OutputConfig, analyzer_result: &AnalyzerResult) -> Res
             let mut writer = stdout.lock();
             analyzer_result.output(output_config, &mut writer)
         }
-        OutputFormat::None => Ok(()),
+        OutputFormat::None => Ok(0),
     }
 }
-*/
-

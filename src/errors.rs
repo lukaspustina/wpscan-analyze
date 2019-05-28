@@ -4,24 +4,27 @@ use std::fmt;
 /// The error kind for errors that get returned in the crate
 #[derive(Eq, PartialEq, Debug, Fail)]
 pub enum ErrorKind {
-    #[fail(display = "file '{}' has wrong format", _0)]
-    InvalidFileFormat(String),
+    #[fail(display = "data has wrong format")]
+    InvalidFormat,
     #[fail(display = "invalid file '{}'", _0)]
     InvalidFile(String),
     #[fail(display = "invalid output format '{}'", _0)]
     InvalidOutputFormat(String),
     #[fail(display = "invalid output detail type '{}'", _0)]
     InvalidOutputDetail(String),
+    #[fail(display = "output failed")]
+    OutputFailed,
 }
 
 impl Clone for ErrorKind {
     fn clone(&self) -> Self {
         use self::ErrorKind::*;
         match *self {
-            InvalidFileFormat(ref s) => InvalidFileFormat(s.clone()),
+            InvalidFormat => InvalidFormat,
             InvalidFile(ref s) => InvalidFile(s.clone()),
             InvalidOutputFormat(ref s) => InvalidOutputFormat(s.clone()),
             InvalidOutputDetail(ref s) => InvalidOutputDetail(s.clone()),
+            OutputFailed => OutputFailed,
         }
     }
 }
