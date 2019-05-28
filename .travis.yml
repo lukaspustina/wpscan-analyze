@@ -1,0 +1,122 @@
+language: rust
+env:
+  global:
+  - CRATE_NAME=wpscan-analyze
+    #  - RUSTFLAGS="-C link-dead-code"
+  - secure: "Jp/GWDxiQMadOB5/QK3mUYnA4lZQEw50Xuy4qHw8jZ4Ft9gbKGvgXBVpY0cg368Z3OnguiytebSZsC/Q722lQ6ZCefuC24d/BSrddsKyy3eakVZtcGLpKn5WZs/yNNJEivSe2QYpB0p7VDw0EyF0oTSAgs5uDbe2/rp4YyUgxt5nn1vcOrG0BodgxskIdaWsBg4QZKumnNhkwKg0F+5547yd9FdQfuABbu6mCflcCdfwbJkFobYou2ThHHz4g8BykGQQLOVTV0FihPlUGaszENeLuKt+fEHPuA7bxnMOm3Op/0HQpCGOvm2XPgsm8iYzoRoqgG3f9M8ODamIwQzWuQ3msS+bKu/9ayrblECb/9nM+RyKPERFROo/PqqgoPfIB2q5i2ckIzJNBSLm3CZMeLPmsh9AyKHWLmHmrC9HZXk3neS2ahjQHNJ1DOIGa0upGWEX63TedFh+CSkPzb2TQ+MQTlHztSsBeuA1tdUHGnTIUYHqB5bN3Uzeg/YQr0mrc2oTMUy05OKkpjia3bVJn0AaWQ8V+ONWYCZJXfedU3OktUVdeaHHeQZAwDz578ulkdTmXeimPY7a+Q5oYV9apHQB7V3Yyo9JKhdq+mwqVqlk1Fnni0sLgv0tyUBv39sNOdmnJPp/R5aBUDroZnD1R0LVVm1tpt2//ZZHpkITEgs="
+matrix:
+  fast_finish: true
+  include:
+  - env: TARGET=x86_64-unknown-linux-gnu DEPLOY_CRATES_IO=1 DEPLOY_DEB=1 DEPLOY_GITHUB=1 DEPLOY_ARCH=amd64
+    rust: 1.34.0
+  - env: TARGET=x86_64-apple-darwin DEPLOY_GITHUB=1
+    rust: 1.34.0
+    os: osx
+  - env: TARGET=x86_64-unknown-linux-gnu CODECOV=1 RUSTFLAGS="-C link-dead-code"
+    rust: stable
+  - env: TARGET=x86_64-apple-darwin
+    rust: stable
+    os: osx
+  - env: TARGET=x86_64-unknown-linux-gnu
+    rust: beta
+  - env: TARGET=x86_64-apple-darwin
+    rust: beta
+    os: osx
+  - env: TARGET=x86_64-unknown-linux-gnu
+    rust: nightly
+  - env: TARGET=x86_64-apple-darwin
+    rust: nightly
+    os: osx
+  allow_failures:
+  - rust: beta
+  - rust: nightly
+sudo: required
+addons:
+  apt:
+    packages:
+    - libcurl4-openssl-dev
+    - libelf-dev
+    - libdw-dev
+    - cmake
+    - gcc
+    - binutils-dev
+    - libiberty-dev
+after_success: |
+  if [[ "$TRAVIS_OS_NAME" == "linux" && "$CODECOV" ]]; then
+    echo "Running code coverage" &&
+    wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+    tar xzf master.tar.gz &&
+    cd kcov-master &&
+    mkdir build &&
+    cd build &&
+    cmake .. &&
+    make &&
+    make install DESTDIR=../../kcov-build &&
+    cd ../.. &&
+    rm -rf kcov-master &&
+    for file in target/debug/wpscan_analyze-*[^\.d] target/debug/it_*[^\.d]; do mkdir -p "target/cov/$(basename $file)"; ./kcov-build/usr/local/bin/kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
+    bash <(curl -s https://codecov.io/bash) &&
+    echo "Uploaded code coverage."
+  fi
+  if [[ "$TRAVIS_TAG" && ( "$DEPLOY_DEB" || "DEPLOY_GITHUB" ) ]]; then
+    echo "Running release build" &&
+    cargo build --release &&
+    cp "target/release/$CRATE_NAME" "target/release/$CRATE_NAME-$TRAVIS_TAG-$TARGET" &&
+    gzip "target/release/$CRATE_NAME-$TRAVIS_TAG-$TARGET" &&
+    ls -l target/release/ &&
+    echo "Built Release Binary."
+  fi
+  if [[ "$DEPLOY_DEB" && "$DEPLOY_ARCH" && "$TRAVIS_TAG" ]]; then
+    echo "Running deb packaging" &&
+    cd distribution/deb/ &&
+    SRC_DIR=../../ BIN_DIR=../../target/release ARCH=$DEPLOY_ARCH VERSION=$TRAVIS_TAG TAG=$TRAVIS_TAG DIST=trusty make package &&
+    cd ../.. &&
+    echo "Built Debian Package."
+  fi
+before_deploy: |
+  echo "Running before each single deployment..."
+  echo "Run before each single deployment."
+deploy:
+  - provider: packagecloud
+    username: lukaspustina
+    token:
+      secure: aXaSc2cA4HSvD5zZcJ4ENJyVc2d3aYnScAoNMSMTHsPUS7o+XlFmG+cg16nrgJ6Ct1/sAqUWHzwnkZbrzEfdqlW85Qc0cOavfSLKnYeOq4dy702moktjZOuGkXHo/0USa0VWQr3P70IBOJM2FGP9HG9Ke5qETT7pDIpvqe+g6eOBSd8ZyAfCPwZZIDnT8cKVGMOWIqxecfoEUVkzdZ6AKBrOBQldAn/rcBWsz2cWCYMMfeczH//Y5Pq+WaEVdGgCEJwm9QobRA84404+CI1bJCgXO0ws9Rbqc0EN7/5q3X4NCrO0qlUT5hm3SB6UiYySyUn1dgIpNZyWnJ3njaqHLLL9Jc07FL4/48gJa+qnrvvotcDNYbNzl38uiHMlfq1QtsP0QgHH/QunCS9GKsjaT7O8OQmFHO98BVOxF24OU22if3XfLe9z9SWHyOelEVezKJ/pFDfP3hnG8ZQ3sMN6rw4UwSgH90hvZfvaJoVNDq986A649cvrVi0OzbeHkjrbXt81SbcpgHRYuFsoF9aMryZSFHSsPKk6hpm/eZnbRdgRsseNlnOy2/nnDeb+LUu5DYeXRmUBPw9qaBQbFUG7OHUcTPIQWtwH4cpy/GjV+yrU1a28LSxtUJgM0cQfY88Ijxrl2GMdBeb0HOghwrTpIIRuWnAvucbVFWzmVbDpNV4=
+    repository: opensource
+    dist: ubuntu/trusty
+    package_glob: "distribution/deb/**/*.deb"
+    skip_cleanup: true
+    on:
+      tags: true
+      condition:
+      - "$DEPLOY_DEB"
+      - "$TRAVIS_TAG"
+  - provider: packagecloud
+    username: centerdevice
+    token:
+      secure: ITNDHqVvRg8nk2OhvlYr9EGzBvLinJ3Muk0/P982NsRYmB1QCZ+v6Sc74VJlPTeB12bwf2+gsos8XBiy9q8vseH8d0MwCxQEyFolAojLhwKX/gqMReIW3tBlqNl3EO2FYH6Zb2sg9mltUoooI4CLOzVa7cPjj6hvMfF7ivgZAgdyKqUbieZZCBGL1DKqBIjPMjPYO/5DFZ2H0vaXzjJ0+7c4AO5wZNL6qfKkGohoVsnpZjXePxsb7epWU8dVi9fHsbGPWjTubNFy75BHn2zaxhxO5iGyketCcCQiFvfiV9y6X4IzXt0Q/Xl78GDla/YkWBumMc+C9onZLqonCjJ5UcDwOQoi7RJqOI8Y1PttxGXB/+y/DIXsNDHhK6T5mmvRtH3tCUS+o49GBPylw/1cE/7fIBM23CWUpQBtty3oYodYP5W03k7H8LgFRuhu4+VhG+XywZ7Zq1bVk+tVWIesJQ+q1uyqPuSgCVw5om2SKNL3Lkg4D74PJ8ZVjWe/H+whUggFQf8IMSsEYp4LtgHVM5WwvUbzz36A+k8GUDrW+uZRd/5cN9PrRyCiqOg0MtDUQ1QK+ELGj3RvrCia79Ks4Dj66AHpRLfbsJTrYMOYVH1/TOIvC3M6rSly0Z5VVgd5GAF95C6ZbyJKzSVP1VX0cGILv8o+6hhaa/XCXliKUsw=
+    repository: infrastructure
+    dist: ubuntu/trusty
+    package_glob: "distribution/deb/**/*.deb"
+    skip_cleanup: true
+    on:
+      tags: true
+      condition:
+      - "$DEPLOY_DEB"
+      - "$TRAVIS_TAG"
+  - provider: releases
+    api_key:
+      secure: hadvNsv7qyrRD2KzvxlmRQE7v363ZpbdoIurf9JSfydTmwmSKsuUe+jsuv5OBTCUd/eoHBLnHdRcFNM7dXROH/Dhg4MBnNAJJP0+DEjTCUxLpV2xNkYJijaqt6rw8ZAWPGXBttz6+/2ug5xDSjtxIXYmE23F6gabkgNBbZF0X+s0EnoZXEEgWPtvNQ9Qdik/bNZbWs3OB7oYEopO+KGctelz7SHfYTFW6K9UYAaYvrsHZnYdHu2x3EcyLhOag2Af5loyi7ZvFvoeswCvkMhsGVh+IuDuD6FSnw4apG6vQaN3LFCMZqjLJ0WMAEPMeFA/OPl3ltoUP/GFvwvu3ft2j48tyP0t2TvYT0g+WgjuczkMmon18ZWBN1fh0OLvsm7XaCRYRIhDXuidyivT7mI2/W/QfG+HiOij4g303xqNepWbR/IxSb6CLTZbDSYec5SSOttspEom4fsnH4mYhYiu/FKdHwfiWiHdeyw8Lql5y2BLaE/IIneYdG2nN701AR+qlo5AJendHDSQrfhF02LQCO1Q2wIxfwO5H9MGYnKK6RWJCJH2X/dfv2xRCX6lC8tnrpK/knISvsbYVom7eATQ9cpFJn3poomnxisTVwSuHI9JgzhX8pdDe0DbeIdga9BnrFc1e21uZeweJgqO7T2LAlmY8kL0qbQhW5ynvICZzDw=
+    file_glob: true
+    file: "target/release/$CRATE_NAME-$TRAVIS_TAG-$TARGET.gz"
+    skip_cleanup: true
+    on:
+      tags: true
+      condition:
+      - "$DEPLOY_GITHUB"
+      - "$TRAVIS_TAG"
+after_deploy: |
+  if [[ "$DEPLOY_CRATES_IO" ]]; then
+    cd /home/travis/build/lukaspustina/$CRATE_NAME
+    cargo publish --token ${CRATES_IO_TOKEN} --allow-dirty
+  fi
+
