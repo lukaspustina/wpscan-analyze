@@ -1,4 +1,4 @@
-use crate::analyze::{AnalyzerResult, WpScanAnalysis};
+use crate::analyze::{AnalyzerResult, Summary, AnalysisSummary, WpScanAnalysis};
 use crate::errors::*;
 
 use failure::Fail;
@@ -112,7 +112,8 @@ impl<'a> WpScanAnalysis<'a> {
             Cell::new("Version"),
             Cell::new("Version State"),
             Cell::new("Vulnerabilities"),
-            Cell::new("Processing Result"),
+            Cell::new("Processing"),
+            Cell::new("Result"),
         ]));
 
         table.add_row(result_to_row("WordPress", &self.word_press));
@@ -129,10 +130,10 @@ impl<'a> WpScanAnalysis<'a> {
 fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
     Row::new(vec![
         Cell::new(name),
-        Cell::new(),
+        version_to_cell(result),
         if result.outdated() {
             Cell::new_align("Outdated", Alignment::CENTER)
-                .with_style(Attr::ForegroundColor(color::RED))
+                .with_style(Attr::ForegroundColor(color::YELLOW))
         } else {
             Cell::new_align("Latest", Alignment::CENTER)
                 .with_style(Attr::ForegroundColor(color::GREEN))
@@ -149,5 +150,27 @@ fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
         } else {
             Cell::new_align("Ok", Alignment::CENTER)
         },
+        summary_to_cell(result),
     ])
+}
+
+fn version_to_cell(result: &AnalyzerResult) -> Cell {
+    let text = match result.version() {
+       Some(version) => version,
+       None => "-"
+    };
+
+    Cell::new(text)
+}
+
+fn summary_to_cell(result: &AnalyzerResult) -> Cell {
+    let mut cell = match result.summary() {
+        AnalysisSummary::Ok => Cell::new("Ok"),
+        AnalysisSummary::Outdated => Cell::new("Outdated").with_style(Attr::ForegroundColor(color::YELLOW)),
+        AnalysisSummary::Vulnerable => Cell::new("Vulnerable").with_style(Attr::ForegroundColor(color::RED)),
+        AnalysisSummary::Failed => Cell::new("Failed").with_style(Attr::ForegroundColor(color::RED)),
+    };
+    cell.align(Alignment::CENTER);
+
+    cell
 }

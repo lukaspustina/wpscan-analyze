@@ -5,6 +5,8 @@ use std::collections::HashMap;
 
 #[derive(Debug, Serialize)]
 pub struct Analysis {
+    // TODO: &str
+    pub version: String,
     pub outdated: bool,
     pub vulnerabilities: usize,
 }
@@ -16,6 +18,13 @@ pub enum AnalyzerResult {
 }
 
 impl AnalyzerResult {
+    pub fn version(&self) -> Option<&str> {
+        match self {
+            AnalyzerResult::Success(analysis) => Some(analysis.version.as_str()),
+            AnalyzerResult::Failed(_) => None,
+        }
+    }
+
     pub fn vulnerabilities(&self) -> usize {
         match self {
             AnalyzerResult::Success(analysis) => analysis.vulnerabilities,
@@ -121,6 +130,7 @@ impl<'a> DefaultAnalyzer<'a> {
 
         AnalyzerResult::Success(
             Analysis {
+                version: word_press.number.clone(),
                 outdated,
                 vulnerabilities,
             }
@@ -143,6 +153,7 @@ impl<'a> DefaultAnalyzer<'a> {
 
         AnalyzerResult::Success(
             Analysis {
+                version: main_theme.version.number.clone(),
                 outdated,
                 vulnerabilities,
             }
@@ -166,6 +177,7 @@ impl<'a> DefaultAnalyzer<'a> {
 
         AnalyzerResult::Success(
             Analysis {
+                version: plugin.version.number.clone(),
                 outdated,
                 vulnerabilities,
             }
