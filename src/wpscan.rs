@@ -1,59 +1,61 @@
-use crate::FromFile;
+use crate::{FromFile, SanityCheck};
 use crate::errors::*;
 
 use serde::Deserialize;
+use log::warn;
 use std::str::FromStr;
 use failure::Fail;
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 pub struct WpScan {
-    banner: Banner,
-    db_update_started: bool,
-    db_update_finished: bool,
-    start_time: usize,
-    stop_time: usize,
-    data_sent: usize,
-    data_received: usize,
-    target_url: String,
-    effective_url: String,
-    version: Version,
-    main_theme: MainTheme,
-    plugins: HashMap<String, Plugin>,
+    pub banner: Banner,
+    pub db_update_started: bool,
+    pub db_update_finished: bool,
+    pub start_time: usize,
+    pub stop_time: usize,
+    pub data_sent: usize,
+    pub data_received: usize,
+    pub target_url: String,
+    pub effective_url: String,
+    #[serde(rename = "version")]
+    pub word_press: Option<Version>,
+    pub main_theme: Option<MainTheme>,
+    pub plugins: HashMap<String, Plugin>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Banner {
-    version: String,
+    pub version: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Version {
-    number: String,
-    status: Option<String>,
-    confidence: usize,
-    vulnerabilities: serde_json::Value,
+    pub number: String,
+    pub status: Option<String>,
+    pub confidence: usize,
+    pub vulnerabilities: serde_json::Value,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct MainTheme {
-    latest_version: Option<String>,
-    last_updated: Option<String>,
-    outdated: bool,
-    style_name: String,
-    style_uri: String,
-    vulnerabilities: serde_json::Value,
-    version: Version,
+    pub latest_version: Option<String>,
+    pub last_updated: Option<String>,
+    pub outdated: bool,
+    pub style_name: String,
+    pub style_uri: String,
+    pub vulnerabilities: serde_json::Value,
+    pub version: Version,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Plugin {
-    slug: String,
-    latest_version: Option<String>,
-    last_updated: Option<String>,
-    outdated: bool,
-    vulnerabilities: serde_json::Value,
-    version: Version,
+    pub slug: String,
+    pub latest_version: Option<String>,
+    pub last_updated: Option<String>,
+    pub outdated: bool,
+    pub vulnerabilities: serde_json::Value,
+    pub version: Version,
 }
 
 impl FromStr for WpScan {
@@ -66,6 +68,38 @@ impl FromStr for WpScan {
 }
 
 impl FromFile for WpScan {}
+
+impl SanityCheck for WpScan {
+    type Error = Error;
+
+    fn is_sane(&self) -> std::result::Result<(), Self::Error> {
+        if self.data_sent == 0 {
+            return Err(Error::from(ErrorKind::InsaneWpScan(
+                "no data has been sent.".to_string()
+            )));
+        }
+        if self.data_received == 0 {
+            return Err(Error::from(ErrorKind::InsaneWpScan(
+                "no data has been received.".to_string()
+            )));
+        }
+        if self.word_press.is_none() {
+            return Err(Error::from(ErrorKind::InsaneWpScan(
+                "Wordpress version could not be recognized.".to_string()
+            )));
+        }
+        if self.main_theme.is_none() {
+            return Err(Error::from(ErrorKind::InsaneWpScan(
+                "Main theme could not be recognized.".to_string()
+            )));
+        }
+        if self.plugins.is_empty() {
+            warn!("No plugins detected; this is okay, if you don't use plugins.");
+        }
+
+        Ok(())
+    }
+}
 
 #[cfg(test)]
 mod test {

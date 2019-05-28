@@ -3,7 +3,8 @@ pub mod errors;
 pub mod wpscan;
 pub mod output;
 
-pub use analyze::AnalyzerResult;
+pub use analyze::{default_analysis, WpScanAnalysis};
+pub use wpscan::WpScan;
 pub use output::{OutputConfig, OutputDetail, OutputFormat};
 
 use errors::*;

@@ -14,6 +14,8 @@ pub enum ErrorKind {
     InvalidOutputDetail(String),
     #[fail(display = "output failed")]
     OutputFailed,
+    #[fail(display = "WpScan is not sane, because {}", _0)]
+    InsaneWpScan(String),
 }
 
 impl Clone for ErrorKind {
@@ -25,6 +27,7 @@ impl Clone for ErrorKind {
             InvalidOutputFormat(ref s) => InvalidOutputFormat(s.clone()),
             InvalidOutputDetail(ref s) => InvalidOutputDetail(s.clone()),
             OutputFailed => OutputFailed,
+            InsaneWpScan(ref s) => InsaneWpScan(s.clone()),
         }
     }
 }

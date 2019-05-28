@@ -1,4 +1,4 @@
-use crate::analyze::AnalyzerResult;
+use crate::analyze::WpScanAnalysis;
 use crate::errors::*;
 
 use failure::Fail;
@@ -7,7 +7,6 @@ use prettytable::Row;
 use prettytable::{color, format, Attr, Table};
 use serde_json;
 use std::io::Write;
-use std::net::IpAddr;
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -62,7 +61,7 @@ pub trait HumanOutput {
     fn output_tty(&self, output_config: &OutputConfig) -> Result<usize>;
 }
 
-impl<'a> JsonOutput for AnalyzerResult<'a> {
+impl<'a> JsonOutput for WpScanAnalysis<'a> {
     fn output<T: Write>(&self, _: &OutputConfig, writer: &mut T) -> Result<usize> {
         let json_str = serde_json::to_string(self)
             .map_err(|e| e.context(ErrorKind::OutputFailed))?;
@@ -75,7 +74,7 @@ impl<'a> JsonOutput for AnalyzerResult<'a> {
     }
 }
 
-impl<'a> HumanOutput for AnalyzerResult<'a> {
+impl<'a> HumanOutput for WpScanAnalysis<'a> {
     fn output<T: Write>(&self, output_config: &OutputConfig, writer: &mut T) -> Result<usize> {
         self.build_table(output_config)
             .print(writer)
@@ -96,7 +95,7 @@ impl<'a> HumanOutput for AnalyzerResult<'a> {
     }
 }
 
-impl<'a> AnalyzerResult<'a> {
+impl<'a> WpScanAnalysis<'a> {
     fn build_table(&self, output_config: &OutputConfig) -> Table {
         let mut table = Table::new();
         /*

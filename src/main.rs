@@ -1,8 +1,10 @@
 use clams;
 use log;
 use wpscan_analyze::{
+    FromFile, SanityCheck,
     errors::*,
-    AnalyzerResult,
+    default_analysis, WpScanAnalysis,
+    WpScan,
     OutputConfig, OutputDetail, OutputFormat,
 };
 use structopt;
@@ -50,7 +52,7 @@ struct Args {
 
 fn main() -> Result<()> {
     let args = Args::from_args();
-    setup("wpscan-analyze", &args);
+    setup("wpscan_analyze", &args);
     debug!("args = {:#?}", args);
 
     let output_config = OutputConfig {
@@ -73,7 +75,7 @@ fn setup(name: &str, args: &Args) {
     if !args.silent {
         eprintln!(
             "{} version={}, log level={:?}",
-            name,
+            env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION"),
             &level
         );
@@ -81,7 +83,7 @@ fn setup(name: &str, args: &Args) {
 
     let log_config = LogConfig::new(
         std::io::stderr(),
-        false,
+        !args.no_color,
         Level(log::LevelFilter::Error),
         vec![ModLevel {
             module: name.to_owned(),
@@ -98,14 +100,13 @@ fn run_wpscan_analyze<T: AsRef<Path>>(
     output_config: &OutputConfig,
     silent: bool,
 ) -> Result<i32> {
-    /*
     info!("Loading wpscan file");
-    let wpscan_run = WpScan::from_file(wpscan_file.as_ref())?;
+    let wpscan = WpScan::from_file(wpscan_file.as_ref())?;
     info!("Checking wpscan results sanity");
-    wpscan_run.is_sane()?;
+    wpscan.is_sane()?;
 
     info!("Analyzing");
-    let analyzer_result = default_analysis(&wpscan_run);
+    let analyzer_result = default_analysis(&wpscan);
     debug!("{:#?}", analyzer_result);
 
     info!("Outputting results"); // Don't bail just because there is an output problem.
@@ -113,6 +114,7 @@ fn run_wpscan_analyze<T: AsRef<Path>>(
         error!("Output failed because {}", x);
     }
 
+    /*
     info!("Summarizing");
     if !silent {
         println!(
@@ -147,7 +149,7 @@ fn run_wpscan_analyze<T: AsRef<Path>>(
     Ok(-1)
 }
 
-fn output(output_config: &OutputConfig, analyzer_result: &AnalyzerResult) -> Result<usize> {
+fn output(output_config: &OutputConfig, analyzer_result: &WpScanAnalysis) -> Result<usize> {
     match output_config.format {
         OutputFormat::Human => {
             use wpscan_analyze::output::HumanOutput;
