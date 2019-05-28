@@ -1,11 +1,11 @@
 pub mod analyze;
 pub mod errors;
-pub mod wpscan;
 pub mod output;
+pub mod wpscan;
 
 pub use analyze::{default_analysis, AnalysisSummary, Summary, WpScanAnalysis};
-pub use wpscan::WpScan;
 pub use output::{OutputConfig, OutputDetail, OutputFormat};
+pub use wpscan::WpScan;
 
 use errors::*;
 
@@ -21,15 +21,15 @@ pub trait FromFile {
     fn from_file<P: AsRef<Path>, E>(path: P) -> ::std::result::Result<Self, Error>
     where
         Self: Sized + FromStr<Err = E>,
-        E: Fail
+        E: Fail,
     {
-        let contents = Self::string_from_file(path.as_ref())
-            .map_err(|e|
-                e.context(ErrorKind::InvalidFile(path.as_ref().to_string_lossy().into_owned())))?;
+        let contents = Self::string_from_file(path.as_ref()).map_err(|e| {
+            e.context(ErrorKind::InvalidFile(
+                path.as_ref().to_string_lossy().into_owned(),
+            ))
+        })?;
 
-        Self::from_str(&contents)
-            .map_err(|e|
-                Error::from(ErrorKind::InvalidFormat))
+        Self::from_str(&contents).map_err(|_| Error::from(ErrorKind::InvalidFormat))
     }
 
     fn string_from_file<P: AsRef<Path>>(

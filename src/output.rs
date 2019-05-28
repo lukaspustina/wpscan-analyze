@@ -1,16 +1,8 @@
-use crate::analyze::{AnalyzerResult, Summary, AnalysisSummary, WpScanAnalysis};
+use crate::analyze::{AnalysisSummary, AnalyzerResult, Summary, WpScanAnalysis};
 use crate::errors::*;
 
 use failure::Fail;
-use prettytable::{
-    Cell,
-    Row,
-    format::Alignment,
-    color,
-    format,
-    Attr,
-    Table
-};
+use prettytable::{color, format, format::Alignment, Attr, Cell, Row, Table};
 use serde_json;
 use std::io::Write;
 use std::str::FromStr;
@@ -69,8 +61,8 @@ pub trait HumanOutput {
 
 impl<'a> JsonOutput for WpScanAnalysis<'a> {
     fn output<T: Write>(&self, _: &OutputConfig, writer: &mut T) -> Result<usize> {
-        let json_str = serde_json::to_string(self)
-            .map_err(|e| e.context(ErrorKind::OutputFailed))?;
+        let json_str =
+            serde_json::to_string(self).map_err(|e| e.context(ErrorKind::OutputFailed))?;
         let bytes = json_str.as_bytes();
         writer
             .write(bytes)
@@ -117,7 +109,7 @@ impl<'a> WpScanAnalysis<'a> {
 
         table.add_row(result_to_row("WordPress", &self.word_press));
         table.add_row(result_to_row("Main Theme", &self.main_theme));
-        for (k,v) in self.plugins.iter() {
+        for (k, v) in self.plugins.iter() {
             if output_config.detail == OutputDetail::NotOkay && v.summary() == AnalysisSummary::Ok {
                 continue;
             }
@@ -141,8 +133,11 @@ fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
                 .with_style(Attr::ForegroundColor(color::GREEN))
         },
         if result.vulnerabilities() > 0 {
-            Cell::new_align(format!("{} vulnerabilities", result.vulnerabilities()).as_ref(), Alignment::CENTER)
-                .with_style(Attr::ForegroundColor(color::RED))
+            Cell::new_align(
+                format!("{} vulnerabilities", result.vulnerabilities()).as_ref(),
+                Alignment::CENTER,
+            )
+            .with_style(Attr::ForegroundColor(color::RED))
         } else {
             Cell::new_align("No vulnerabilities", Alignment::CENTER)
         },
@@ -158,8 +153,8 @@ fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
 
 fn version_to_cell(result: &AnalyzerResult) -> Cell {
     let text = match result.version() {
-       Some(version) => version,
-       None => "-"
+        Some(version) => version,
+        None => "-",
     };
 
     Cell::new(text)
@@ -168,9 +163,15 @@ fn version_to_cell(result: &AnalyzerResult) -> Cell {
 fn summary_to_cell(result: &AnalyzerResult) -> Cell {
     let mut cell = match result.summary() {
         AnalysisSummary::Ok => Cell::new("Ok"),
-        AnalysisSummary::Outdated => Cell::new("Outdated").with_style(Attr::ForegroundColor(color::YELLOW)),
-        AnalysisSummary::Vulnerable => Cell::new("Vulnerable").with_style(Attr::ForegroundColor(color::RED)),
-        AnalysisSummary::Failed => Cell::new("Failed").with_style(Attr::ForegroundColor(color::RED)),
+        AnalysisSummary::Outdated => {
+            Cell::new("Outdated").with_style(Attr::ForegroundColor(color::YELLOW))
+        }
+        AnalysisSummary::Vulnerable => {
+            Cell::new("Vulnerable").with_style(Attr::ForegroundColor(color::RED))
+        }
+        AnalysisSummary::Failed => {
+            Cell::new("Failed").with_style(Attr::ForegroundColor(color::RED))
+        }
     };
     cell.align(Alignment::CENTER);
 

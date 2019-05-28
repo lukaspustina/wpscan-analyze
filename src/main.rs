@@ -1,18 +1,15 @@
 use clams;
 use log;
-use wpscan_analyze::{
-    FromFile, SanityCheck,
-    errors::*,
-    default_analysis, AnalysisSummary, Summary, WpScanAnalysis,
-    WpScan,
-    OutputConfig, OutputDetail, OutputFormat,
-};
 use structopt;
+use wpscan_analyze::{
+    default_analysis, errors::*, AnalysisSummary, FromFile, OutputConfig, OutputDetail,
+    OutputFormat, SanityCheck, Summary, WpScan, WpScanAnalysis,
+};
 
 use clams::prelude::*;
 use std::path::{Path, PathBuf};
-use structopt::StructOpt;
 use std::process;
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 #[structopt(
@@ -61,11 +58,7 @@ fn main() -> Result<()> {
         color: !args.no_color,
     };
 
-    run_wpscan_analyze(
-        &args.wpscan,
-        &output_config,
-        args.silent,
-    ).map(|code| process::exit(code))
+    run_wpscan_analyze(&args.wpscan, &output_config, args.silent).map(|code| process::exit(code))
 }
 
 fn setup(name: &str, args: &Args) {

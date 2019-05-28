@@ -1,11 +1,11 @@
-use crate::{FromFile, SanityCheck};
 use crate::errors::*;
+use crate::{FromFile, SanityCheck};
 
-use serde::Deserialize;
-use log::warn;
-use std::str::FromStr;
 use failure::Fail;
+use log::warn;
+use serde::Deserialize;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 #[derive(Debug, Deserialize)]
 pub struct WpScan {
@@ -62,8 +62,7 @@ impl FromStr for WpScan {
     type Err = Error;
 
     fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
-        serde_json::from_str(s)
-            .map_err(|e| e.context(ErrorKind::InvalidFormat).into())
+        serde_json::from_str(s).map_err(|e| e.context(ErrorKind::InvalidFormat).into())
     }
 }
 
@@ -75,22 +74,22 @@ impl SanityCheck for WpScan {
     fn is_sane(&self) -> std::result::Result<(), Self::Error> {
         if self.data_sent == 0 {
             return Err(Error::from(ErrorKind::InsaneWpScan(
-                "no data has been sent.".to_string()
+                "no data has been sent.".to_string(),
             )));
         }
         if self.data_received == 0 {
             return Err(Error::from(ErrorKind::InsaneWpScan(
-                "no data has been received.".to_string()
+                "no data has been received.".to_string(),
             )));
         }
         if self.word_press.is_none() {
             return Err(Error::from(ErrorKind::InsaneWpScan(
-                "Wordpress version could not be recognized.".to_string()
+                "WordPress version could not be recognized.".to_string(),
             )));
         }
         if self.main_theme.is_none() {
             return Err(Error::from(ErrorKind::InsaneWpScan(
-                "Main theme could not be recognized.".to_string()
+                "Main theme could not be recognized.".to_string(),
             )));
         }
         if self.plugins.is_empty() {

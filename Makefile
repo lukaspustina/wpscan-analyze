@@ -31,10 +31,10 @@ install:
 	cargo install --force
 
 clippy:
-	cargo +nightly clippy
+	cargo clippy
 
 fmt:
-	cargo +nightly fmt
+	cargo fmt
 
 duplicate_libs:
 	cargo tree -d
