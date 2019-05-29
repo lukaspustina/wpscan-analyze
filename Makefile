@@ -41,8 +41,8 @@ duplicate_libs:
 
 _update-clippy_n_fmt:
 	rustup update
-	rustup component add clippy-preview --toolchain=nightly
-	rustup component add rustfmt-preview --toolchain=nightly
+	rustup component add clippy
+	rustup component add rustfmt
 
 _cargo_install:
 	cargo install -f cargo-tree
