@@ -4,7 +4,7 @@ Analyzes wpscan json output and checks for vulnerabilities
 
 [![Linux and macOS Build Status](https://travis-ci.org/lukaspustina/wpscan-analyze.svg?branch=master)](https://travis-ci.org/lukaspustina/wpscan-analyze) [![codecov](https://codecov.io/gh/lukaspustina/wpscan-analyze/branch/master/graph/badge.svg)](https://codecov.io/gh/lukaspustina/wpscan-analyze) [![GitHub release](https://img.shields.io/github/release/lukaspustina/wpscan-analyze.svg)](https://github.com/lukaspustina/wpscan-analyze/releases) [![](https://img.shields.io/crates/v/wpscan-analyze.svg)](https://crates.io/crates/wpscan-analyze) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg?label=License)](./LICENSE)
 
-[wpscan](https://wpscan.org) checks WordPress installation for outdated versions, plugins, and themes. `wpscan` analysis `wpscan`'s JSON output and signals results via exit status, JSON and human readable out.
+[wpscan](https://wpscan.org) checks WordPress installation for outdated versions, plugins, and themes. `wpscan-analyze` analyses `wpscan`'s JSON output and signals results via exit status, JSON and human readable output.
 
 
 ## Basic Usage
