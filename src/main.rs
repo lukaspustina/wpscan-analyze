@@ -120,7 +120,9 @@ fn run_wpscan_analyze<T: AsRef<Path>>(
         );
     }
 
-    let res = match analyzer_result.summary() {
+    let summary = analyzer_result.summary();
+    debug!("Summary={:?}", summary);
+    let res = match summary {
         AnalysisSummary::Ok => 0,
         AnalysisSummary::Vulnerable => 11,
         AnalysisSummary::Outdated => 12,

@@ -214,7 +214,7 @@ impl<'a, S: BuildHasher> Summary for HashMap<&'a str, AnalyzerResult<'a>, S> {
             AnalyzerResult::Success(_) => true,
             AnalyzerResult::Failed(_) => false,
         });
-        if fails.is_empty() {
+        if !fails.is_empty() {
             return AnalysisSummary::Failed;
         }
 
