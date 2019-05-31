@@ -32,9 +32,8 @@ $(BASE_NAME)/DEBIAN/conffiles: templates/DEBIAN/conffiles
 	cp $< $@
 
 
-$(BASE_NAME)/usr/share/man/man1/$(BIN_NAME).1: ../../docs/ $(BASE_NAME)/usr/share/man/man1
-	$(MAKE) -C $<
-	cp $</man1/$(BIN_NAME).1 $@
+$(BASE_NAME)/usr/share/man/man1/$(BIN_NAME).1: ../../docs/$(BIN_NAME).1 $(BASE_NAME)/usr/share/man/man1
+	cp $< $@
 
 $(BASE_NAME)/usr/bin:
 	mkdir -p $@
