@@ -138,7 +138,7 @@ pub trait SanityCheck {
     fn is_sane(&self) -> ::std::result::Result<(), Self::Error>;
 }
 
-fn from_str<'de, T, D>(deserializer: D) -> ::std::result::Result<T, D::Error>
+pub(crate) fn from_str<'de, T, D>(deserializer: D) -> ::std::result::Result<T, D::Error>
 where
     T: FromStr,
     T::Err: Display,

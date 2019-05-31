@@ -7,7 +7,7 @@ use serde_json;
 use std::io::Write;
 use std::str::FromStr;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum OutputFormat {
     Human,
     Json,
@@ -176,4 +176,26 @@ fn summary_to_cell(result: &AnalyzerResult) -> Cell {
     cell.align(Alignment::CENTER);
 
     cell
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use spectral::prelude::*;
+
+    #[test]
+    fn output_format_from_str() {
+        assert_that(&OutputFormat::from_str("human")).is_ok().is_equal_to(OutputFormat::Human);
+        assert_that(&OutputFormat::from_str("json")).is_ok().is_equal_to(OutputFormat::Json);
+        assert_that(&OutputFormat::from_str("none")).is_ok().is_equal_to(OutputFormat::None);
+        assert_that(&OutputFormat::from_str("lukas")).is_err();
+    }
+
+    #[test]
+    fn output_detail_from_str() {
+        assert_that(&OutputDetail::from_str("all")).is_ok().is_equal_to(OutputDetail::All);
+        assert_that(&OutputDetail::from_str("nok")).is_ok().is_equal_to(OutputDetail::NotOkay);
+        assert_that(&OutputDetail::from_str("lukas")).is_err();
+    }
 }

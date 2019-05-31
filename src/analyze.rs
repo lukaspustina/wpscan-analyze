@@ -4,14 +4,14 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::hash::BuildHasher;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct Analysis<'a> {
     pub version: &'a str,
     pub outdated: bool,
     pub vulnerabilities: usize,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 pub enum AnalyzerResult<'a> {
     Success(Analysis<'a>),
     Failed(String),
@@ -47,7 +47,7 @@ impl<'a> AnalyzerResult<'a> {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct WpScanAnalysis<'a> {
     pub word_press: AnalyzerResult<'a>,
     pub main_theme: AnalyzerResult<'a>,
@@ -262,4 +262,135 @@ impl<'a> Summary for WpScanAnalysis<'a> {
 
         AnalysisSummary::Ok
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::WPSCAN_TEST_DATA;
+
+    use spectral::prelude::*;
+
+    #[test]
+    fn default_analysis_stats() {
+        let wpscan = WPSCAN_TEST_DATA();
+
+        let analyzer = DefaultAnalyzer::new(&wpscan);
+        let analysis = analyzer.analyze();
+
+        asserting("vulnerabilities").that(&analysis.vulnerabilities()).is_equal_to(1);
+        asserting("outdated").that(&analysis.outdated()).is_equal_to(3);
+        asserting("failed").that(&analysis.failed()).is_equal_to(0);
+    }
+
+    #[test]
+    fn default_analysis() {
+        let expected_plugins: HashMap<&str, AnalyzerResult> = [
+            ("jm-twitter-cards", AnalyzerResult::Success(
+                Analysis {
+                    version: "9.4",
+                    outdated: true,
+                    vulnerabilities: 0
+                }
+            )),
+            ("js_composer", AnalyzerResult::Success(
+                Analysis {
+                    version: "4.11.1",
+                    outdated: false,
+                    vulnerabilities: 0
+                }
+            )),
+            ("wordpress-seo", AnalyzerResult::Success(
+                Analysis {
+                    version: "8.0",
+                    outdated: true,
+                    vulnerabilities: 1
+                }
+            )),
+            ("bwp-minify", AnalyzerResult::Success(
+                Analysis {
+                    version: "1.3.3",
+                    outdated: false,
+                    vulnerabilities: 0
+                }
+            )),
+            ("wp-super-cache", AnalyzerResult::Success(
+                Analysis {
+                    version: "1.6.3",
+                    outdated: true,
+                    vulnerabilities: 0
+                }
+            ))
+        ].iter().cloned().collect();
+        let expected = WpScanAnalysis {
+            word_press: AnalyzerResult::Success(
+                Analysis {
+                    version: "4.9.10",
+                    outdated: false,
+                    vulnerabilities: 0
+                }
+            ),
+            main_theme: AnalyzerResult::Success(
+                Analysis {
+                    version: "3.2.1",
+                    outdated: false,
+                    vulnerabilities: 0
+                }
+            ),
+            plugins: expected_plugins,
+        };
+
+        let wpscan = WPSCAN_TEST_DATA();
+
+        let analyzer = DefaultAnalyzer::new(&wpscan);
+        let analysis = analyzer.analyze();
+
+        asserting("Default Analysis").that(&analysis).is_equal_to(expected);
+    }
+
+    #[test]
+    fn default_analysis_summary_success() {
+        let result = AnalyzerResult::Success(
+            Analysis {
+                version: "4.9.10",
+                outdated: false,
+                vulnerabilities: 0
+            }
+        );
+
+        asserting("Ok").that(&result.summary()).is_equal_to(AnalysisSummary::Ok);
+     }
+
+    #[test]
+    fn default_analysis_summary_vulnaribility() {
+        let result = AnalyzerResult::Success(
+            Analysis {
+                version: "4.9.10",
+                outdated: false,
+                vulnerabilities: 1
+            }
+        );
+
+        asserting("Ok").that(&result.summary()).is_equal_to(AnalysisSummary::Vulnerable);
+     }
+
+    #[test]
+    fn default_analysis_summary_outdated() {
+        let result = AnalyzerResult::Success(
+            Analysis {
+                version: "4.9.10",
+                outdated: true,
+                vulnerabilities: 0
+            }
+        );
+
+        asserting("Ok").that(&result.summary()).is_equal_to(AnalysisSummary::Outdated);
+     }
+
+    #[test]
+    fn default_analysis_summary_failed() {
+        let result = AnalyzerResult::Failed("Failure reason".to_string());
+
+        asserting("Ok").that(&result.summary()).is_equal_to(AnalysisSummary::Failed);
+     }
 }
