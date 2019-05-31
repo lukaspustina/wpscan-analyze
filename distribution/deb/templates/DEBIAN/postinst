@@ -1,5 +1,8 @@
 chown root:root /usr/bin/wpscan-analyze
 chmod 755 /usr/bin/wpscan-analyze
 
+chown root:root /usr/share/man/man1/wpscan-analyze.1
+chmod 644 /usr/share/man/man1/wpscan-analyze.1
+
 mandb
 

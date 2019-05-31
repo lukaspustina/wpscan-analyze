@@ -6,7 +6,7 @@ all:
 
 package: $(BASE_NAME)-$(VERSION)-$(DIST)-$(ARCH).deb
 
-$(BASE_NAME)-$(VERSION)-$(DIST)-$(ARCH).deb: $(BASE_NAME)/DEBIAN/control $(BASE_NAME)/DEBIAN/conffiles $(BASE_NAME)/DEBIAN/postinst $(BASE_NAME)/DEBIAN/prerm $(BASE_NAME)/usr/bin/$(BIN_NAME)
+$(BASE_NAME)-$(VERSION)-$(DIST)-$(ARCH).deb: $(BASE_NAME)/DEBIAN/control $(BASE_NAME)/DEBIAN/conffiles $(BASE_NAME)/DEBIAN/postinst $(BASE_NAME)/DEBIAN/prerm $(BASE_NAME)/usr/bin/$(BIN_NAME) $(BASE_NAME)/usr/share/man/man1/$(BIN_NAME).1
 	dpkg-deb -b $(BASE_NAME) $@
 	dpkg-deb -I $@
 
@@ -30,6 +30,11 @@ $(BASE_NAME)/DEBIAN/prerm: templates/DEBIAN/prerm
 
 $(BASE_NAME)/DEBIAN/conffiles: templates/DEBIAN/conffiles
 	cp $< $@
+
+
+$(BASE_NAME)/usr/share/man/man1/$(BIN_NAME).1: ../../docs/ $(BASE_NAME)/usr/share/man/man1
+	$(MAKE) -C $<
+	cp $</man1/$(BIN_NAME).1 $@
 
 $(BASE_NAME)/usr/bin:
 	mkdir -p $@
