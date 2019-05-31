@@ -147,6 +147,7 @@ where
     let s = String::deserialize(deserializer)?;
     T::from_str(&s).map_err(de::Error::custom)
 }
+
 #[cfg(test)]
 mod test {
     use super::WpScan;
