@@ -1,6 +1,6 @@
 [package]
 name = "wpscan-analyze"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Lukas Pustina <lukas@pustina.net>"]
 description = "Analyzes wpscan json output and checks for vulnerabilities"
 repository = "https://github.com/lukaspustina/wpscan-analyze.git"
