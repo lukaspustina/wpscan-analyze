@@ -368,20 +368,7 @@
       "vulnerabilities": [
 
       ],
-      "version": {
-        "number": "1.6.3",
-        "confidence": 80,
-        "found_by": "Readme - Stable Tag (Aggressive Detection)",
-        "interesting_entries": [
-          "https://www.example.com/wp-content/plugins/wp-super-cache/readme.txt"
-        ],
-        "confirmed_by": {
-
-        },
-        "vulnerabilities": [
-
-        ]
-      }
+      "version": null
     }
   },
   "config_backups": {

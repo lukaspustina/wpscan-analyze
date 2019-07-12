@@ -60,7 +60,7 @@ pub struct Plugin {
     pub last_updated: Option<String>,
     pub outdated: bool,
     pub vulnerabilities: serde_json::Value,
-    pub version: Version,
+    pub version: Option<Version>,
 }
 
 impl FromStr for WpScan {

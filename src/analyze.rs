@@ -176,7 +176,7 @@ impl<'a> DefaultAnalyzer<'a> {
         };
 
         AnalyzerResult::Success(Analysis {
-            version: &plugin.version.number,
+            version: plugin.version.as_ref().map(|x| x.number.as_ref()).unwrap_or_else(|| "-"),
             outdated,
             vulnerabilities,
         })
@@ -316,7 +316,7 @@ mod tests {
             )),
             ("wp-super-cache", AnalyzerResult::Success(
                 Analysis {
-                    version: "1.6.3",
+                    version: "-",
                     outdated: true,
                     vulnerabilities: 0
                 }
