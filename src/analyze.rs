@@ -124,7 +124,7 @@ impl<'a> DefaultAnalyzer<'a> {
             return AnalyzerResult::Failed("Could not determine version status".to_string());
         };
 
-        let vulnerabilities = if let serde_json::Value::Array(list) = &word_press.vulnerabilities {
+        let vulnerabilities = if let Some(serde_json::Value::Array(list)) = &word_press.vulnerabilities {
             list.len()
         } else {
             0
@@ -145,7 +145,7 @@ impl<'a> DefaultAnalyzer<'a> {
 
         let outdated = main_theme.outdated;
 
-        let vulnerabilities = if let serde_json::Value::Array(list) = &main_theme.vulnerabilities {
+        let vulnerabilities = if let Some(serde_json::Value::Array(list)) = &main_theme.vulnerabilities {
             list.len()
         } else {
             0
@@ -169,7 +169,7 @@ impl<'a> DefaultAnalyzer<'a> {
     fn analyze_plugin(plugin: &'a Plugin) -> AnalyzerResult<'a> {
         let outdated = plugin.outdated;
 
-        let vulnerabilities = if let serde_json::Value::Array(list) = &plugin.vulnerabilities {
+        let vulnerabilities = if let Some(serde_json::Value::Array(list)) = &plugin.vulnerabilities {
             list.len()
         } else {
             0

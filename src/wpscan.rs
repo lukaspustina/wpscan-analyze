@@ -39,7 +39,7 @@ pub struct Version {
     pub number: String,
     pub status: Option<String>,
     pub confidence: usize,
-    pub vulnerabilities: serde_json::Value,
+    pub vulnerabilities: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -49,7 +49,7 @@ pub struct MainTheme {
     pub outdated: bool,
     pub style_name: String,
     pub style_uri: String,
-    pub vulnerabilities: serde_json::Value,
+    pub vulnerabilities: Option<serde_json::Value>,
     pub version: Version,
 }
 
@@ -59,7 +59,7 @@ pub struct Plugin {
     pub latest_version: Option<String>,
     pub last_updated: Option<String>,
     pub outdated: bool,
-    pub vulnerabilities: serde_json::Value,
+    pub vulnerabilities: Option<serde_json::Value>,
     pub version: Option<Version>,
 }
 
