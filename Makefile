@@ -31,10 +31,10 @@ install:
 	cargo install --force
 
 clippy:
-	cargo clippy
+	cargo clippy --workspace --all-targets --all-features -- -D warnings $$(source ".clippy.args")
 
 fmt:
-	cargo fmt
+	cargo +nightly fmt
 
 duplicate_libs:
 	cargo tree -d
