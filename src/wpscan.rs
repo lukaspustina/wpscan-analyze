@@ -134,6 +134,7 @@ pub trait SanityCheck {
     fn is_sane(&self) -> ::std::result::Result<(), Self::Error>;
 }
 
+#[allow(dead_code)]
 pub(crate) fn from_str<'de, T, D>(deserializer: D) -> ::std::result::Result<T, D::Error>
 where
     T: FromStr,
@@ -152,7 +153,7 @@ mod test {
     use spectral::prelude::*;
 
     #[test]
-    fn load_wpscan_results_file() -> () {
+    fn load_wpscan_results_file() {
         let file = "tests/wpscan-example_com.json";
 
         let wp_scan = WpScan::from_file(file);

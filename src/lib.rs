@@ -16,9 +16,8 @@ mod tests {
     #[allow(non_snake_case)]
     pub(crate) fn WPSCAN_TEST_DATA() -> WpScan {
         let wp_file = include_str!("../tests/wpscan-example_com.json");
-        let wpscan = WpScan::from_str(&wp_file).unwrap();
 
-        wpscan
+        WpScan::from_str(&wp_file).unwrap()
     }
 }
 
