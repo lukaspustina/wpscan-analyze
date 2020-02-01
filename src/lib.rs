@@ -20,4 +20,3 @@ mod tests {
         WpScan::from_str(&wp_file).unwrap()
     }
 }
-

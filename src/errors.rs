@@ -40,9 +40,7 @@ pub struct Error {
 
 impl Error {
     /// Get the kind of the error
-    pub fn kind(&self) -> &ErrorKind {
-        self.inner.get_context()
-    }
+    pub fn kind(&self) -> &ErrorKind { self.inner.get_context() }
 }
 
 impl Clone for Error {
@@ -54,19 +52,13 @@ impl Clone for Error {
 }
 
 impl Fail for Error {
-    fn cause(&self) -> Option<&dyn Fail> {
-        self.inner.cause()
-    }
+    fn cause(&self) -> Option<&dyn Fail> { self.inner.cause() }
 
-    fn backtrace(&self) -> Option<&Backtrace> {
-        self.inner.backtrace()
-    }
+    fn backtrace(&self) -> Option<&Backtrace> { self.inner.backtrace() }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&self.inner, f)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::Display::fmt(&self.inner, f) }
 }
 
 impl From<ErrorKind> for Error {
@@ -78,9 +70,7 @@ impl From<ErrorKind> for Error {
 }
 
 impl From<Context<ErrorKind>> for Error {
-    fn from(inner: Context<ErrorKind>) -> Error {
-        Error { inner }
-    }
+    fn from(inner: Context<ErrorKind>) -> Error { Error { inner } }
 }
 
 pub type Result<T> = ::std::result::Result<T, Error>;

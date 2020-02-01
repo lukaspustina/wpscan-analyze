@@ -1,11 +1,12 @@
-use crate::analyze::{AnalysisSummary, AnalyzerResult, Summary, WpScanAnalysis};
-use crate::errors::*;
+use crate::{
+    analyze::{AnalysisSummary, AnalyzerResult, Summary, WpScanAnalysis},
+    errors::*,
+};
 
 use failure::Fail;
 use prettytable::{color, format, format::Alignment, Attr, Cell, Row, Table};
 use serde_json;
-use std::io::Write;
-use std::str::FromStr;
+use std::{io::Write, str::FromStr};
 
 #[derive(Debug, PartialEq)]
 pub enum OutputFormat {
@@ -16,6 +17,7 @@ pub enum OutputFormat {
 
 impl FromStr for OutputFormat {
     type Err = Error;
+
     fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_ref() {
             "human" => Ok(OutputFormat::Human),
@@ -34,6 +36,7 @@ pub enum OutputDetail {
 
 impl FromStr for OutputDetail {
     type Err = Error;
+
     fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_ref() {
             "nok" => Ok(OutputDetail::NotOkay),
@@ -47,7 +50,7 @@ impl FromStr for OutputDetail {
 pub struct OutputConfig {
     pub detail: OutputDetail,
     pub format: OutputFormat,
-    pub color: bool,
+    pub color:  bool,
 }
 
 pub trait JsonOutput {
@@ -61,12 +64,9 @@ pub trait HumanOutput {
 
 impl<'a> JsonOutput for WpScanAnalysis<'a> {
     fn output<T: Write>(&self, _: &OutputConfig, writer: &mut T) -> Result<usize> {
-        let json_str =
-            serde_json::to_string(self).map_err(|e| e.context(ErrorKind::OutputFailed))?;
+        let json_str = serde_json::to_string(self).map_err(|e| e.context(ErrorKind::OutputFailed))?;
         let bytes = json_str.as_bytes();
-        writer
-            .write(bytes)
-            .map_err(|e| e.context(ErrorKind::OutputFailed))?;
+        writer.write(bytes).map_err(|e| e.context(ErrorKind::OutputFailed))?;
 
         Ok(bytes.len())
     }
@@ -126,11 +126,9 @@ fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
         Cell::new(name),
         version_to_cell(result),
         if result.outdated() {
-            Cell::new_align("Outdated", Alignment::CENTER)
-                .with_style(Attr::ForegroundColor(color::YELLOW))
+            Cell::new_align("Outdated", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW))
         } else {
-            Cell::new_align("Latest", Alignment::CENTER)
-                .with_style(Attr::ForegroundColor(color::GREEN))
+            Cell::new_align("Latest", Alignment::CENTER).with_style(Attr::ForegroundColor(color::GREEN))
         },
         if result.vulnerabilities() > 0 {
             Cell::new_align(
@@ -142,8 +140,7 @@ fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
             Cell::new_align("No vulnerabilities", Alignment::CENTER)
         },
         if result.failed() {
-            Cell::new_align("Failed", Alignment::CENTER)
-                .with_style(Attr::ForegroundColor(color::RED))
+            Cell::new_align("Failed", Alignment::CENTER).with_style(Attr::ForegroundColor(color::RED))
         } else {
             Cell::new_align("Ok", Alignment::CENTER)
         },
@@ -163,15 +160,9 @@ fn version_to_cell(result: &AnalyzerResult) -> Cell {
 fn summary_to_cell(result: &AnalyzerResult) -> Cell {
     let mut cell = match result.summary() {
         AnalysisSummary::Ok => Cell::new("Ok"),
-        AnalysisSummary::Outdated => {
-            Cell::new("Outdated").with_style(Attr::ForegroundColor(color::YELLOW))
-        }
-        AnalysisSummary::Vulnerable => {
-            Cell::new("Vulnerable").with_style(Attr::ForegroundColor(color::RED))
-        }
-        AnalysisSummary::Failed => {
-            Cell::new("Failed").with_style(Attr::ForegroundColor(color::RED))
-        }
+        AnalysisSummary::Outdated => Cell::new("Outdated").with_style(Attr::ForegroundColor(color::YELLOW)),
+        AnalysisSummary::Vulnerable => Cell::new("Vulnerable").with_style(Attr::ForegroundColor(color::RED)),
+        AnalysisSummary::Failed => Cell::new("Failed").with_style(Attr::ForegroundColor(color::RED)),
     };
     cell.align(Alignment::CENTER);
 
@@ -186,16 +177,26 @@ mod tests {
 
     #[test]
     fn output_format_from_str() {
-        assert_that(&OutputFormat::from_str("human")).is_ok().is_equal_to(OutputFormat::Human);
-        assert_that(&OutputFormat::from_str("json")).is_ok().is_equal_to(OutputFormat::Json);
-        assert_that(&OutputFormat::from_str("none")).is_ok().is_equal_to(OutputFormat::None);
+        assert_that(&OutputFormat::from_str("human"))
+            .is_ok()
+            .is_equal_to(OutputFormat::Human);
+        assert_that(&OutputFormat::from_str("json"))
+            .is_ok()
+            .is_equal_to(OutputFormat::Json);
+        assert_that(&OutputFormat::from_str("none"))
+            .is_ok()
+            .is_equal_to(OutputFormat::None);
         assert_that(&OutputFormat::from_str("lukas")).is_err();
     }
 
     #[test]
     fn output_detail_from_str() {
-        assert_that(&OutputDetail::from_str("all")).is_ok().is_equal_to(OutputDetail::All);
-        assert_that(&OutputDetail::from_str("nok")).is_ok().is_equal_to(OutputDetail::NotOkay);
+        assert_that(&OutputDetail::from_str("all"))
+            .is_ok()
+            .is_equal_to(OutputDetail::All);
+        assert_that(&OutputDetail::from_str("nok"))
+            .is_ok()
+            .is_equal_to(OutputDetail::NotOkay);
         assert_that(&OutputDetail::from_str("lukas")).is_err();
     }
 }
