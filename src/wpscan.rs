@@ -15,8 +15,6 @@ use std::str::FromStr;
 #[derive(Debug, Deserialize)]
 pub struct WpScan {
     pub banner: Banner,
-    pub db_update_started: bool,
-    pub db_update_finished: bool,
     pub start_time: usize,
     pub stop_time: usize,
     pub data_sent: usize,
@@ -47,10 +45,8 @@ pub struct MainTheme {
     pub latest_version: Option<String>,
     pub last_updated: Option<String>,
     pub outdated: bool,
-    pub style_name: String,
-    pub style_uri: String,
     pub vulnerabilities: Option<serde_json::Value>,
-    pub version: Version,
+    pub version: Option<Version>,
 }
 
 #[derive(Debug, Deserialize)]

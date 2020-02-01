@@ -152,7 +152,7 @@ impl<'a> DefaultAnalyzer<'a> {
         };
 
         AnalyzerResult::Success(Analysis {
-            version: &main_theme.version.number,
+            version: &main_theme.version.as_ref().map(|x| x.number.as_ref()).unwrap_or_else(|| "-"),
             outdated,
             vulnerabilities,
         })
