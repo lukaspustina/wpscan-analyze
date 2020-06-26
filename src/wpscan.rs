@@ -85,9 +85,7 @@ impl SanityCheck for WpScan {
             )));
         }
         if self.main_theme.is_none() {
-            return Err(Error::from(ErrorKind::InsaneWpScan(
-                "Main theme could not be recognized.".to_string(),
-            )));
+            warn!("No main theme recognized; this may be okay, but corresponding analysis results are unreliable.");
         }
         if self.plugins.is_empty() {
             warn!("No plugins detected; this is okay, if you don't use plugins.");
