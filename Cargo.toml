@@ -28,4 +28,4 @@ spectral = "^0.6"
 
 [[bin]]
 name = "wpscan-analyze"
-path = "src/main.rs"
+path = "src/lib.rs"
