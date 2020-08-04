@@ -1,7 +1,7 @@
 # WPScan-Analyze Dockerfile
 
 
-FROM rust:alpine
+FROM rust:latest
 WORKDIR /usr/src/wpscan-analyze
 COPY * /usr/src/wpscan-analyze
 RUN cargo build
