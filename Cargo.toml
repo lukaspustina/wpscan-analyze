@@ -25,7 +25,3 @@ structopt = "0.2"
 
 [dev-dependencies]
 spectral = "^0.6"
-
-[[bin]]
-name = "wpscan-analyze"
-path = "src/lib.rs"
