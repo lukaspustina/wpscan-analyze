@@ -70,7 +70,8 @@ cargo build
 
 ### Docker
 
-Please install docker and run
+Please install docker.
+Clone the repository and run:
 
 ```bash
 docker image build -t wpscan-analyze .
@@ -79,7 +80,7 @@ docker image build -t wpscan-analyze .
 Run it with
 
 ```bash
-    docker run -it wpscan-analyze
+docker run -it wpscan-analyze
 ```
 
 ## Postcardware
