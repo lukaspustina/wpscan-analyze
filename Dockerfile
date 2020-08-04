@@ -4,7 +4,7 @@
 FROM rust:latest
 COPY ./* /usr/src/wpscan-analyze/
 WORKDIR /usr/src/wpscan-analyze
-RUN cargo build
+RUN cargo build --verbose.
 RUN chown -R wpscan-analyze /wpscan-analyze
 USER wpscan-analyze
 ENTRYPOINT ["wpscan-analyze"]
