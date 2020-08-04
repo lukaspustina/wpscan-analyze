@@ -6,7 +6,7 @@
 # Install config
 version=v1.0.4
 install_to="/usr/local/bin"
-binary_file="${install_link_to}/wpscan-analyze"
+binary_file="${install_to}/wpscan-analyze"
 
 # Install script
 # Fast fail if any errors
