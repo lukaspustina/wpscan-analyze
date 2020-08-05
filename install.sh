@@ -22,22 +22,26 @@ echo "[INFO] wpscan-analyze install script for MacOS and Linux"
 echo
 echo
 
-#Cleaning git repo
-rm -rf wpscan-analyze 2>/dev/null || true
-# init repo
-if ! git clone https://github.com/lukaspustina/wpscan-analyze --quiet; then
-    echo "[ERROR] Github repo lukaspustina/wpscan-analyze is not accessible"
-    exit 1
-fi
-cd wpscan-analyze
+# Determine latest version based on lastest git tag with github api
+version="v`curl --silent "https://api.github.com/repos/lukaspustina/wpscan-analyze/releases/latest" | grep tag_name | sed -E 's/.*"v(.*)",/\1/'`"
 
 # Ask to build from source ?
-echo "[QUESTION] Do you want to build wpscan-analyze from source ?"
+echo "[QUESTION] Do you want to build latest wpscan-analyze version from source ?"
 read -p "[INFO] Answer No to download binary from github and copy it to ${install_to} [y/n] " -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    #Cleaning git repo
+    rm -rf wpscan-analyze
+    # init repo
+    if ! git clone https://github.com/lukaspustina/wpscan-analyze; then
+        echo "[ERROR] Github repo lukaspustina/wpscan-analyze is not accessible"
+        exit 1
+    fi
+    cd wpscan-analyze
+    echo "[INFO] Checkout latest stable version"
+    git checkout ${version}
     if ! which cargo; then
-        read -p "[QUESTION] Cargo is not detected. Do you want install Rust environment ? [y/n]" -n 1 -r
+        read -p "[QUESTION] Cargo is not detected. Do you want install Rust environment? [y/n]" -n 1 -r
         echo    # (optional) move to a new line
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -57,10 +61,6 @@ else
         echo "[ERROR] Unsupported architecture, only 64 bits are supported by this script. Please install Rust environment and build wpscan-analayze from source. Visit https://github.com/lukaspustina/wpscan-analyze for more infos."
         exit 1
     fi
-
-    # Determine version based on lastest git tag
-    version=`git tag | tail -1`
-    cd ..
 
     # Determine file name based on operating system and version
     filename=""
@@ -82,11 +82,10 @@ else
     rm "${filename}" 2>/dev/null || true
 
     # Get binary file
-    wget --quiet "https://github.com/lukaspustina/wpscan-analyze/releases/download/${version}/${filename}.gz"
+    wget "https://github.com/lukaspustina/wpscan-analyze/releases/download/${version}/${filename}.gz"
 
     # Unzip it
     gzip -d "${filename}.gz"
-
 
     # Copy file
     echo "[INFO] Copying binary from /tmp/${filename} to ${binary_file}"
