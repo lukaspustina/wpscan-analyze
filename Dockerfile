@@ -6,4 +6,5 @@ WORKDIR /usr/src/wpscan-analyze
 RUN ls -alh
 RUN cargo build
 RUN cargo install --path .
+WORKDIR /
 ENTRYPOINT ["wpscan-analyze"]

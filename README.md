@@ -18,7 +18,7 @@ Analyzes wpscan json output and checks for vulnerabilities
 ### Run wpscan-analyze
 
 ```bash
-> wpscan -f wpscan.json
+> wpscan-analyze -f wpscan.json
 wpscan-analyze version=0.0.2, log level=Level(Warn)
 +--------------------------+---------+---------------+--------------------+------------+------------+
 | Component                | Version | Version State | Vulnerabilities    | Processing | Result     |
@@ -79,10 +79,11 @@ cd wpscan-analyze
 docker image build -t wpscan-analyze .
 ```
 
-Run it with
+Adjust volume mapping as your convinience.  
+For exemple, with relative paths, run it with: 
 
 ```bash
-docker run -it wpscan-analyze
+docker run -it -v "$(pwd):/" wpscan-analyze -f wpscan.json
 ```
 
 ## Postcardware
