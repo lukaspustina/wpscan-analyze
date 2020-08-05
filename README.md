@@ -50,9 +50,9 @@ curl -s https://packagecloud.io/install/repositories/lukaspustina/opensource/scr
 sudo apt-get install wpscan-analyze
 ```
 
-### Install script: from Sources and Linux/MacOS Binaries [x86_64]
+### Install script
 
-Simply run: 
+**Simply run:**  
 ```bash
 curl -s https://raw.githubusercontent.com/lukaspustina/wpscan-analyze/master/install.sh | sh
 ```
