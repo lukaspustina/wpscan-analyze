@@ -89,7 +89,7 @@ docker run -it -v "$(pwd):/wpscan-analyze/" wpscan-analyze -f wpscan.json
 Or share a temp dir:
 
 ```bash
-docker run -it -v "/tmp/:/tmp/" wpscan-analyze -f wpscan.json
+docker run -it -v "/tmp/:/tmp/" wpscan-analyze -f /tmp/wpscan.json
 ```
 
 ## Postcardware
