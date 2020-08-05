@@ -86,6 +86,12 @@ For exemple, with relative paths, run it with:
 docker run -it -v "$(pwd):/wpscan-analyze/" wpscan-analyze -f wpscan.json
 ```
 
+Or share a temp dir:
+
+```bash
+docker run -it -v "/tmp/:/tmp/" wpscan-analyze -f wpscan.json
+```
+
 ## Postcardware
 
 You're free to use `wpscan-analyze`. If you find it useful, I would highly appreciate you sending me a postcard from your hometown mentioning how you use `wpscan-analyze`. My work address is
