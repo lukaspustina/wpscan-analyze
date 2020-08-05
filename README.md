@@ -83,7 +83,7 @@ Adjust volume mapping as your convinience.
 For exemple, with relative paths, run it with: 
 
 ```bash
-docker run -it -v "$(pwd):/" wpscan-analyze -f wpscan.json
+docker run -it -v "$(pwd):/wpscan-analyze/" wpscan-analyze -f wpscan.json
 ```
 
 ## Postcardware
