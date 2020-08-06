@@ -51,7 +51,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             exit 1
         fi
     fi
-    echo "[INFO] Builing..."
+    echo "[INFO] Building..."
     cargo install --path .
     echo "[INFO] Uninstall with: 'cargo uninstall wpscan-analyze'"
 else
