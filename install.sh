@@ -27,7 +27,8 @@ version="v`curl --silent "https://api.github.com/repos/lukaspustina/wpscan-analy
 
 # Ask to build from source ?
 echo "[QUESTION] Do you want to build latest wpscan-analyze version from source ?"
-read -p "[INFO] Answer No to download binary from github and copy it to ${install_to} [y/n]"
+echo "[INFO] Answer No to download binary from github and copy it to ${install_to} [y/n]"
+read continue
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     #Cleaning git repo
@@ -41,7 +42,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "[INFO] Checkout latest stable version"
     git checkout ${version}
     if ! which cargo; then
-        read -p "[QUESTION] Cargo is not detected. Do you want install Rust environment? [y/n]"
+        echo "[QUESTION] Cargo is not detected. Do you want install Rust environment? [y/n]"
+        read continue
         echo    # (optional) move to a new line
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
