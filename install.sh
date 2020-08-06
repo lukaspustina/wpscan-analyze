@@ -33,7 +33,7 @@ echo "[INFO] Latest version is ${raw_version}"
 # Ask to build from source ?
 echo "[QUESTION] Do you want to build latest wpscan-analyze version from source ?"
 echo "[QUESTION] Answer No to download binary from github and copy it to ${install_to} [y/n/cancel]"
-read 
+REPLY=$(sed 1q)
 if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
     #Cleaning git repo
     rm -rf wpscan-analyze
@@ -47,7 +47,7 @@ if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY
     git checkout ${version}
     if ! which cargo; then
         echo "[QUESTION] Cargo is not detected. Do you want install Rust environment? [y/n]"
-        read
+        REPLY=$(sed 1q)
         if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
             source $HOME/.cargo/env
