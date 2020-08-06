@@ -50,6 +50,7 @@ if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY
         REPLY=$(sed 1q)
         if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+            sleep 1
             source $HOME/.cargo/env
         else
             echo "Canceled"
