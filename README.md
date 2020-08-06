@@ -38,11 +38,11 @@ Analyzer result summary: outdated=3, vulnerabilities=1, failed=0
 11
 ```
 
-Ok => 0  
-Error => 1 or other  
-Vulnerable => 11  
-Outdated => 12  
-Failed => 13  
+- Ok: 0  
+- Error: 1    
+- Vulnerable: 11  
+- Outdated: 12  
+- Failed: 13  
 
 ### Help
 
@@ -65,10 +65,11 @@ sudo apt-get install wpscan-analyze
 ```bash
 sh -c "$(curl -sSL https://raw.githubusercontent.com/lukaspustina/wpscan-analyze/master/install.sh)"
 ```
+
 The script will ask you if you want to install `wpscan-analyzer` from source OR from binaries from [release page](https://github.com/lukaspustina/wpscan-analyze/releases) (Linux binary is compilied with Ubuntu). 
 
 If you don't use Ubuntu linux or MacOs , you'll probably have to build the software from source.  
-If you use a non x86_64 processor, you'll have to build the software from source.
+If you use a non x86_64 processor, you must build the software from source.
 
 ### Docker
 
