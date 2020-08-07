@@ -12,7 +12,7 @@ binary_file="${install_to}/wpscan-analyze"
 set -e
 
 # Cd to temp and try to create/delete file
-cd /tmp/ || ( mkdir tmp && cd tmp )
+cd /tmp/ || ( mkdir -p tmp && cd tmp )
 touch "wpscan-analayze-install-$(date)" && rm -f "wpscan-analayze-install-*"
 
 # Info banner
@@ -23,7 +23,7 @@ raw_version=`curl --silent "https://api.github.com/repos/lukaspustina/wpscan-ana
 version="v${raw_version}"
 
 old_install=""
-if which -s wpscan-analyze; then
+if which wpscan-analyze > /dev/null 2>&1; then
     old_install=`which wpscan-analyze`
     echo "[INFO] wpscan-analyze in already installed: ${old_install} (`wpscan-analyze --version`)"
     echo "[INFO] The script will remove this installation"
@@ -38,14 +38,14 @@ if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY
     #Cleaning git repo
     rm -rf wpscan-analyze
     # init repo
-    if ! git clone https://github.com/lukaspustina/wpscan-analyze; then
+    if ! git clone --quiet https://github.com/lukaspustina/wpscan-analyze; then
         echo "[ERROR] Github repo lukaspustina/wpscan-analyze is not accessible"
         exit 1
     fi
     cd wpscan-analyze
     echo "[INFO] Checkout latest stable version"
-    git checkout ${version}
-    if ! which cargo; then
+    git checkout --quiet ${version}
+    if ! which cargo > /dev/null 2>&1; then
         echo "[QUESTION] Cargo is not detected. Do you want install Rust environment? [y/n]"
         REPLY=$(sed 1q)
         if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
@@ -60,7 +60,7 @@ if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY
 
     if [ ! -z "${old_install}" ]; then
         echo "[INFO] Removing old install ${old_install}"
-        if ! cargo uninstall wpscan-analyze; then
+        if ! cargo uninstall wpscan-analyze > /dev/null 2>&1; then
             rm -rf "${old_install}"
         fi
     fi
@@ -98,7 +98,7 @@ else
 
         # Get binary file
 
-        if ! wget "https://github.com/lukaspustina/wpscan-analyze/releases/download/${version}/${filename}.gz"; then
+        if ! wget --quiet "https://github.com/lukaspustina/wpscan-analyze/releases/download/${version}/${filename}.gz"; then
             echo "[ERROR] Make sure 'wget' is installed on your system and your have internet"
         fi
 
@@ -107,7 +107,7 @@ else
 
         if [ ! -z "${old_install}" ]; then
             echo "[INFO] Removing old install ${old_install}"
-            if ! cargo uninstall wpscan-analyze; then
+            if ! cargo uninstall wpscan-analyze > /dev/null 2>&1; then
                 rm -rf "${old_install}"
             fi
         fi
