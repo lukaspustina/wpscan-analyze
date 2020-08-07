@@ -12,7 +12,7 @@ binary_file="${install_to}/wpscan-analyze"
 set -e
 
 # Cd to temp and try to create/delete file
-cd /tmp/
+cd /tmp/ || ( mkdir tmp && cd tmp )
 touch "wpscan-analayze-install-$(date)" && rm -f "wpscan-analayze-install-*"
 
 # Info banner
@@ -32,7 +32,7 @@ fi
 echo "[INFO] Latest version is ${raw_version}"
 # Ask to build from source ?
 echo "[QUESTION] Do you want to build latest wpscan-analyze version from source ?"
-echo "[QUESTION] Answer No to download binary from github and copy it to ${install_to} [y/n/cancel]"
+echo "[QUESTION] Answer No to download binary from github and copy it to ${install_to} (You'll be asked if you want to change the install path) [y/n/cancel]"
 REPLY=$(sed 1q)
 if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
     #Cleaning git repo
@@ -112,8 +112,17 @@ else
             fi
         fi
 
+        echo "[QUESTION] Do you want to change the install directory? Default to ${install_to} [y/n]"
+        REPLY=$(sed 1q)
+        if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
+            echo "[QUESTION] Type the new full path to install directory:"
+            REPLY=$(sed 1q)
+            install_to="$REPLY"
+            binary_file="${install_to}/wpscan-analyze"
+        fi
+        
         # Copy file
-        echo "[INFO] Copying binary from /tmp/${filename} to ${binary_file}"
+        echo "[INFO] Copying binary from $(pwd)/${filename} to ${binary_file}"
         rm "${binary_file}" 2>/dev/null || true
         cp "${filename}" "${binary_file}"
 
