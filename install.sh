@@ -23,12 +23,17 @@ raw_version=`curl --silent "https://api.github.com/repos/lukaspustina/wpscan-ana
 version="v${raw_version}"
 
 old_install=""
+old_install_version=""
 if which wpscan-analyze > /dev/null 2>&1; then
     old_install=`which wpscan-analyze`
-    echo "[INFO] wpscan-analyze in already installed: ${old_install} (`wpscan-analyze --version`)"
+    old_install_version=`wpscan-analyze --version`
+    echo "[INFO] wpscan-analyze in already installed: ${old_install} (${old_install_version})"
     echo "[INFO] The script will remove this installation"
 fi
-
+if [ ! -z "${old_install}" ] && [ "${old_install_version}" = "wpscan-analyze ${raw_version}" ]; then
+    echo "[ERROR] You already have the latest wpscan-analyze version. If you're looking for the dev version please install it manually."
+    exit 1
+fi
 echo "[INFO] Latest version is ${raw_version}"
 # Ask to build from source ?
 echo "[QUESTION] Do you want to build latest wpscan-analyze version from source ?"
