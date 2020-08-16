@@ -10,17 +10,17 @@ use std::{collections::HashMap, fmt::Display, fs::File, io::Read, path::Path, st
 
 #[derive(Debug, Deserialize)]
 pub struct WpScan {
-    pub banner:        Banner,
-    pub start_time:    usize,
-    pub stop_time:     usize,
-    pub data_sent:     usize,
+    pub banner: Option<Banner>,
+    pub start_time: usize,
+    pub stop_time: usize,
+    pub data_sent: usize,
     pub data_received: usize,
-    pub target_url:    String,
+    pub target_url: String,
     pub effective_url: String,
     #[serde(rename = "version")]
-    pub word_press:    Option<Version>,
-    pub main_theme:    Option<MainTheme>,
-    pub plugins:       HashMap<String, Plugin>,
+    pub word_press: Option<Version>,
+    pub main_theme: Option<MainTheme>,
+    pub plugins: HashMap<String, Plugin>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -30,29 +30,29 @@ pub struct Banner {
 
 #[derive(Debug, Deserialize)]
 pub struct Version {
-    pub number:          String,
-    pub status:          Option<String>,
-    pub confidence:      usize,
+    pub number: String,
+    pub status: Option<String>,
+    pub confidence: usize,
     pub vulnerabilities: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct MainTheme {
-    pub latest_version:  Option<String>,
-    pub last_updated:    Option<String>,
-    pub outdated:        bool,
+    pub latest_version: Option<String>,
+    pub last_updated: Option<String>,
+    pub outdated: Option<bool>,
     pub vulnerabilities: Option<serde_json::Value>,
-    pub version:         Option<Version>,
+    pub version: Option<Version>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Plugin {
-    pub slug:            String,
-    pub latest_version:  Option<String>,
-    pub last_updated:    Option<String>,
-    pub outdated:        bool,
+    pub slug: String,
+    pub latest_version: Option<String>,
+    pub last_updated: Option<String>,
+    pub outdated: Option<bool>,
     pub vulnerabilities: Option<serde_json::Value>,
-    pub version:         Option<Version>,
+    pub version: Option<Version>,
 }
 
 impl FromStr for WpScan {
@@ -144,6 +144,16 @@ mod test {
     #[test]
     fn load_wpscan_results_file() {
         let file = "tests/wpscan-example_com.json";
+
+        let wp_scan = WpScan::from_file(file);
+
+        assert_that(&wp_scan).is_ok();
+        println!("{:#?}", wp_scan.unwrap());
+    }
+
+    #[test]
+    fn load_wpscan_results_file_no_banner() {
+        let file = "tests/wpscan-example_com-no_banner.json";
 
         let wp_scan = WpScan::from_file(file);
 

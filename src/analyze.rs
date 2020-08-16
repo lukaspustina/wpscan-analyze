@@ -3,10 +3,31 @@ use crate::wpscan::{Plugin, WpScan};
 use serde::Serialize;
 use std::{collections::HashMap, hash::BuildHasher};
 
+#[derive(Debug, Serialize, PartialEq, Clone, Copy)]
+pub enum VersionState {
+    Latest,
+    Outdated,
+    Unknown,
+}
+
+impl VersionState {
+    pub fn is_latest(&self) -> bool {
+        *self == VersionState::Latest
+    }
+
+    pub fn is_outdated(&self) -> bool {
+        *self == VersionState::Outdated
+    }
+
+    pub fn is_unknown(&self) -> bool {
+        *self == VersionState::Unknown
+    }
+}
+
 #[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct Analysis<'a> {
-    pub version:         &'a str,
-    pub outdated:        bool,
+    pub version: &'a str,
+    pub version_state: VersionState,
     pub vulnerabilities: usize,
 }
 
@@ -31,10 +52,10 @@ impl<'a> AnalyzerResult<'a> {
         }
     }
 
-    pub fn outdated(&self) -> bool {
+    pub fn version_state(&self) -> VersionState {
         match self {
-            AnalyzerResult::Success(analysis) => analysis.outdated,
-            AnalyzerResult::Failed(_) => false,
+            AnalyzerResult::Success(analysis) => analysis.version_state,
+            AnalyzerResult::Failed(_) => VersionState::Unknown,
         }
     }
 
@@ -50,7 +71,7 @@ impl<'a> AnalyzerResult<'a> {
 pub struct WpScanAnalysis<'a> {
     pub word_press: AnalyzerResult<'a>,
     pub main_theme: AnalyzerResult<'a>,
-    pub plugins:    HashMap<&'a str, AnalyzerResult<'a>>,
+    pub plugins: HashMap<&'a str, AnalyzerResult<'a>>,
 }
 
 impl<'a> WpScanAnalysis<'a> {
@@ -65,9 +86,34 @@ impl<'a> WpScanAnalysis<'a> {
     }
 
     pub fn outdated(&self) -> usize {
-        self.plugins.values().filter(|x| x.outdated()).count()
-            + if self.word_press.outdated() { 1 } else { 0 }
-            + if self.main_theme.outdated() { 1 } else { 0 }
+        self.plugins
+            .values()
+            .filter(|x| x.version_state().is_outdated())
+            .count()
+            + if self.word_press.version_state().is_outdated() {
+                1
+            } else {
+                0
+            }
+            + if self.main_theme.version_state().is_outdated() {
+                1
+            } else {
+                0
+            }
+    }
+
+    pub fn unknown(&self) -> usize {
+        self.plugins.values().filter(|x| x.version_state().is_unknown()).count()
+            + if self.word_press.version_state().is_unknown() {
+                1
+            } else {
+                0
+            }
+            + if self.main_theme.version_state().is_unknown() {
+                1
+            } else {
+                0
+            }
     }
 
     pub fn failed(&self) -> usize {
@@ -91,7 +137,9 @@ pub struct DefaultAnalyzer<'a> {
 }
 
 impl<'a> DefaultAnalyzer<'a> {
-    pub fn new(wpscan: &'a WpScan) -> DefaultAnalyzer<'a> { DefaultAnalyzer { wpscan } }
+    pub fn new(wpscan: &'a WpScan) -> DefaultAnalyzer<'a> {
+        DefaultAnalyzer { wpscan }
+    }
 }
 
 impl<'a> Analyzer<'a> for DefaultAnalyzer<'a> {
@@ -111,14 +159,18 @@ impl<'a> Analyzer<'a> for DefaultAnalyzer<'a> {
 impl<'a> DefaultAnalyzer<'a> {
     fn analyze_word_press(&self) -> AnalyzerResult<'a> {
         if self.wpscan.word_press.is_none() {
-            return AnalyzerResult::Failed("Could not determine WordPress".to_string());
+            return AnalyzerResult::Success(Analysis {
+                version: "-",
+                version_state: VersionState::Unknown,
+                vulnerabilities: 0,
+            });
         };
         let word_press = self.wpscan.word_press.as_ref().unwrap(); // Safe
 
-        let outdated = if let Some(status) = &word_press.status {
-            status != "latest"
-        } else {
-            return AnalyzerResult::Failed("Could not determine version status".to_string());
+        let version_state = match word_press.status {
+            Some(ref status) if status == "latest" => VersionState::Latest,
+            Some(_) => VersionState::Outdated,
+            _ => VersionState::Unknown,
         };
 
         let vulnerabilities = if let Some(serde_json::Value::Array(list)) = &word_press.vulnerabilities {
@@ -129,18 +181,27 @@ impl<'a> DefaultAnalyzer<'a> {
 
         AnalyzerResult::Success(Analysis {
             version: &word_press.number,
-            outdated,
+            version_state,
             vulnerabilities,
         })
     }
 
     fn analyze_main_theme(&self) -> AnalyzerResult<'a> {
         if self.wpscan.main_theme.is_none() {
-            return AnalyzerResult::Failed("Could not determine main theme".to_string());
+            return AnalyzerResult::Success(Analysis {
+                version: "-",
+                version_state: VersionState::Unknown,
+                vulnerabilities: 0,
+            });
         };
         let main_theme = self.wpscan.main_theme.as_ref().unwrap(); // Safe
 
-        let outdated = main_theme.outdated;
+        let version_state = match main_theme.outdated {
+            Some(false) => VersionState::Latest,
+            Some(true) if main_theme.version.is_none() => VersionState::Unknown,
+            Some(true) => VersionState::Outdated,
+            _ => VersionState::Unknown,
+        };
 
         let vulnerabilities = if let Some(serde_json::Value::Array(list)) = &main_theme.vulnerabilities {
             list.len()
@@ -154,7 +215,7 @@ impl<'a> DefaultAnalyzer<'a> {
                 .as_ref()
                 .map(|x| x.number.as_ref())
                 .unwrap_or_else(|| "-"),
-            outdated,
+            version_state,
             vulnerabilities,
         })
     }
@@ -168,7 +229,12 @@ impl<'a> DefaultAnalyzer<'a> {
     }
 
     fn analyze_plugin(plugin: &'a Plugin) -> AnalyzerResult<'a> {
-        let outdated = plugin.outdated;
+        let version_state = match plugin.outdated {
+            Some(false) => VersionState::Latest,
+            Some(true) if plugin.version.is_none() => VersionState::Unknown,
+            Some(true) => VersionState::Outdated,
+            _ => VersionState::Unknown,
+        };
 
         let vulnerabilities = if let Some(serde_json::Value::Array(list)) = &plugin.vulnerabilities {
             list.len()
@@ -182,7 +248,7 @@ impl<'a> DefaultAnalyzer<'a> {
                 .as_ref()
                 .map(|x| x.number.as_ref())
                 .unwrap_or_else(|| "-"),
-            outdated,
+            version_state,
             vulnerabilities,
         })
     }
@@ -191,6 +257,7 @@ impl<'a> DefaultAnalyzer<'a> {
 #[derive(Debug, Serialize, PartialEq)]
 pub enum AnalysisSummary {
     Outdated,
+    Unknown,
     Vulnerable,
     Failed,
     Ok,
@@ -204,7 +271,8 @@ impl<'a> Summary for AnalyzerResult<'a> {
     fn summary(&self) -> AnalysisSummary {
         match self {
             AnalyzerResult::Success(analysis) if analysis.vulnerabilities > 0 => AnalysisSummary::Vulnerable,
-            AnalyzerResult::Success(analysis) if analysis.outdated => AnalysisSummary::Outdated,
+            AnalyzerResult::Success(analysis) if analysis.version_state.is_outdated() => AnalysisSummary::Outdated,
+            AnalyzerResult::Success(analysis) if analysis.version_state.is_unknown() => AnalysisSummary::Unknown,
             AnalyzerResult::Failed(_) => AnalysisSummary::Failed,
             _ => AnalysisSummary::Ok,
         }
@@ -213,11 +281,9 @@ impl<'a> Summary for AnalyzerResult<'a> {
 
 impl<'a, S: BuildHasher> Summary for HashMap<&'a str, AnalyzerResult<'a>, S> {
     fn summary(&self) -> AnalysisSummary {
-        let (success, fails): (Vec<_>, Vec<_>) = self.values().partition(|x| {
-            match x {
-                AnalyzerResult::Success(_) => true,
-                AnalyzerResult::Failed(_) => false,
-            }
+        let (success, fails): (Vec<_>, Vec<_>) = self.values().partition(|x| match x {
+            AnalyzerResult::Success(_) => true,
+            AnalyzerResult::Failed(_) => false,
         });
         if !fails.is_empty() {
             return AnalysisSummary::Failed;
@@ -235,12 +301,22 @@ impl<'a, S: BuildHasher> Summary for HashMap<&'a str, AnalyzerResult<'a>, S> {
 
         let outdated = success.iter().fold(0, |acc, x| {
             acc + match x {
-                AnalyzerResult::Success(analysis) if analysis.outdated => 1,
+                AnalyzerResult::Success(analysis) if analysis.version_state.is_outdated() => 1,
                 _ => 0,
             }
         });
         if outdated > 0 {
             return AnalysisSummary::Outdated;
+        }
+
+        let unknown = success.iter().fold(0, |acc, x| {
+            acc + match x {
+                AnalyzerResult::Success(analysis) if analysis.version_state.is_unknown() => 1,
+                _ => 0,
+            }
+        });
+        if unknown > 0 {
+            return AnalysisSummary::Unknown;
         }
 
         AnalysisSummary::Ok
@@ -272,7 +348,7 @@ impl<'a> Summary for WpScanAnalysis<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::WPSCAN_TEST_DATA;
+    use crate::tests::{WPSCAN_TEST_DATA, WPSCAN_TEST_DATA_NO_WP_VERSION};
 
     use spectral::prelude::*;
 
@@ -286,7 +362,8 @@ mod tests {
         asserting("vulnerabilities")
             .that(&analysis.vulnerabilities())
             .is_equal_to(1);
-        asserting("outdated").that(&analysis.outdated()).is_equal_to(3);
+        asserting("outdated").that(&analysis.outdated()).is_equal_to(2);
+        asserting("unknown").that(&analysis.unknown()).is_equal_to(1);
         asserting("failed").that(&analysis.failed()).is_equal_to(0);
     }
 
@@ -296,40 +373,40 @@ mod tests {
             (
                 "jm-twitter-cards",
                 AnalyzerResult::Success(Analysis {
-                    version:         "9.4",
-                    outdated:        true,
+                    version: "9.4",
+                    version_state: VersionState::Outdated,
                     vulnerabilities: 0,
                 }),
             ),
             (
                 "js_composer",
                 AnalyzerResult::Success(Analysis {
-                    version:         "4.11.1",
-                    outdated:        false,
+                    version: "4.11.1",
+                    version_state: VersionState::Latest,
                     vulnerabilities: 0,
                 }),
             ),
             (
                 "wordpress-seo",
                 AnalyzerResult::Success(Analysis {
-                    version:         "8.0",
-                    outdated:        true,
+                    version: "8.0",
+                    version_state: VersionState::Outdated,
                     vulnerabilities: 1,
                 }),
             ),
             (
                 "bwp-minify",
                 AnalyzerResult::Success(Analysis {
-                    version:         "1.3.3",
-                    outdated:        false,
+                    version: "1.3.3",
+                    version_state: VersionState::Latest,
                     vulnerabilities: 0,
                 }),
             ),
             (
                 "wp-super-cache",
                 AnalyzerResult::Success(Analysis {
-                    version:         "-",
-                    outdated:        true,
+                    version: "-",
+                    version_state: VersionState::Unknown,
                     vulnerabilities: 0,
                 }),
             ),
@@ -339,16 +416,16 @@ mod tests {
         .collect();
         let expected = WpScanAnalysis {
             word_press: AnalyzerResult::Success(Analysis {
-                version:         "4.9.10",
-                outdated:        false,
+                version: "4.9.10",
+                version_state: VersionState::Latest,
                 vulnerabilities: 0,
             }),
             main_theme: AnalyzerResult::Success(Analysis {
-                version:         "3.2.1",
-                outdated:        false,
+                version: "3.2.1",
+                version_state: VersionState::Latest,
                 vulnerabilities: 0,
             }),
-            plugins:    expected_plugins,
+            plugins: expected_plugins,
         };
 
         let wpscan = WPSCAN_TEST_DATA();
@@ -362,8 +439,8 @@ mod tests {
     #[test]
     fn default_analysis_summary_success() {
         let result = AnalyzerResult::Success(Analysis {
-            version:         "4.9.10",
-            outdated:        false,
+            version: "4.9.10",
+            version_state: VersionState::Latest,
             vulnerabilities: 0,
         });
 
@@ -373,8 +450,8 @@ mod tests {
     #[test]
     fn default_analysis_summary_vulnaribility() {
         let result = AnalyzerResult::Success(Analysis {
-            version:         "4.9.10",
-            outdated:        false,
+            version: "4.9.10",
+            version_state: VersionState::Latest,
             vulnerabilities: 1,
         });
 
@@ -386,8 +463,8 @@ mod tests {
     #[test]
     fn default_analysis_summary_outdated() {
         let result = AnalyzerResult::Success(Analysis {
-            version:         "4.9.10",
-            outdated:        true,
+            version: "4.9.10",
+            version_state: VersionState::Outdated,
             vulnerabilities: 0,
         });
 
@@ -403,5 +480,20 @@ mod tests {
         asserting("Ok")
             .that(&result.summary())
             .is_equal_to(AnalysisSummary::Failed);
+    }
+
+    #[test]
+    fn analysis_no_wp_version() {
+        let wpscan = WPSCAN_TEST_DATA_NO_WP_VERSION();
+
+        let analyzer = DefaultAnalyzer::new(&wpscan);
+        let analysis = analyzer.analyze();
+
+        asserting("vulnerabilities")
+            .that(&analysis.vulnerabilities())
+            .is_equal_to(1);
+        asserting("outdated").that(&analysis.outdated()).is_equal_to(2);
+        asserting("unknown").that(&analysis.unknown()).is_equal_to(2);
+        asserting("failed").that(&analysis.failed()).is_equal_to(0);
     }
 }
