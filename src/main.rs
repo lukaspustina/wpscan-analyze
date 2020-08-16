@@ -1,6 +1,3 @@
-use clams;
-use log;
-use structopt;
 use wpscan_analyze::{
     default_analysis,
     errors::*,

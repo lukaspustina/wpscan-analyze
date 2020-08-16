@@ -5,7 +5,6 @@ use crate::{
 
 use failure::Fail;
 use prettytable::{color, format, format::Alignment, Attr, Cell, Row, Table};
-use serde_json;
 use std::{io::Write, str::FromStr};
 use crate::analyze::VersionState;
 
