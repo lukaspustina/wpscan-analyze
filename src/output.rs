@@ -3,10 +3,10 @@ use crate::{
     errors::*,
 };
 
+use crate::analyze::VersionState;
 use failure::Fail;
 use prettytable::{color, format, format::Alignment, Attr, Cell, Row, Table};
 use std::{io::Write, str::FromStr};
-use crate::analyze::VersionState;
 
 #[derive(Debug, PartialEq)]
 pub enum OutputFormat {
@@ -50,7 +50,7 @@ impl FromStr for OutputDetail {
 pub struct OutputConfig {
     pub detail: OutputDetail,
     pub format: OutputFormat,
-    pub color:  bool,
+    pub color: bool,
 }
 
 pub trait JsonOutput {
@@ -126,12 +126,15 @@ fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
         Cell::new(name),
         version_to_cell(result),
         match result.version_state() {
-            VersionState::Latest =>
-                Cell::new_align("Latest", Alignment::CENTER).with_style(Attr::ForegroundColor(color::GREEN)),
-            VersionState::Outdated =>
-                Cell::new_align("Outdated", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW)),
-            VersionState::Unknown =>
-                Cell::new_align("Unknown", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW)),
+            VersionState::Latest => {
+                Cell::new_align("Latest", Alignment::CENTER).with_style(Attr::ForegroundColor(color::GREEN))
+            }
+            VersionState::Outdated => {
+                Cell::new_align("Outdated", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW))
+            }
+            VersionState::Unknown => {
+                Cell::new_align("Unknown", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW))
+            }
         },
         if result.vulnerabilities() > 0 {
             Cell::new_align(

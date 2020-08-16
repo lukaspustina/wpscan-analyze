@@ -1,15 +1,6 @@
 use wpscan_analyze::{
-    default_analysis,
-    errors::*,
-    AnalysisSummary,
-    FromFile,
-    OutputConfig,
-    OutputDetail,
-    OutputFormat,
-    SanityCheck,
-    Summary,
-    WpScan,
-    WpScanAnalysis,
+    default_analysis, errors::*, AnalysisSummary, FromFile, OutputConfig, OutputDetail, OutputFormat, SanityCheck,
+    Summary, WpScan, WpScanAnalysis,
 };
 
 use clams::prelude::*;
@@ -28,7 +19,7 @@ use structopt::StructOpt;
 struct Args {
     /// wpscan json file
     #[structopt(short = "f", long = "wpscan", parse(from_os_str))]
-    wpscan:        PathBuf,
+    wpscan: PathBuf,
     /// Select output format
     #[structopt(
         short = "o",
@@ -46,13 +37,13 @@ struct Args {
     output_detail: OutputDetail,
     /// Do not use colored output
     #[structopt(long = "no-color")]
-    no_color:      bool,
+    no_color: bool,
     /// Silencium; use this for json output
     #[structopt(short = "s", long = "silent")]
-    silent:        bool,
+    silent: bool,
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
-    verbosity:     u64,
+    verbosity: u64,
 }
 
 fn main() -> Result<()> {
@@ -63,7 +54,7 @@ fn main() -> Result<()> {
     let output_config = OutputConfig {
         detail: args.output_detail,
         format: args.output_format,
-        color:  !args.no_color,
+        color: !args.no_color,
     };
 
     run_wpscan_analyze(&args.wpscan, &output_config, args.silent).map(|code| process::exit(code))
@@ -101,7 +92,7 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
     let wpscan = WpScan::from_file(wpscan_file.as_ref())?;
     info!("Checking wpscan results sanity");
     match wpscan.is_sane() {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(err) => warn!("{} Continuing but be cautious about the results.", err),
     }
 
@@ -134,7 +125,7 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
     let res = match summary {
         AnalysisSummary::Ok => 0,
         AnalysisSummary::Vulnerable => 11,
-        AnalysisSummary::Outdated  => 12,
+        AnalysisSummary::Outdated => 12,
         AnalysisSummary::Failed => 13,
         AnalysisSummary::Unknown => 14,
     };
