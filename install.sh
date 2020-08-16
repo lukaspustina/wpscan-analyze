@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # wpscan-analyze install script for MacOS and Linux.
 # This script will download, unzip and install binary file to /usr/local/bin/
 # Script requirement: wget
