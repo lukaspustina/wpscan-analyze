@@ -3,9 +3,9 @@ use crate::{
     errors::*,
 };
 
+use crate::analyze::VersionState;
 use failure::Fail;
 use prettytable::{color, format, format::Alignment, Attr, Cell, Row, Table};
-use serde_json;
 use std::{io::Write, str::FromStr};
 
 #[derive(Debug, PartialEq)]
@@ -50,7 +50,7 @@ impl FromStr for OutputDetail {
 pub struct OutputConfig {
     pub detail: OutputDetail,
     pub format: OutputFormat,
-    pub color:  bool,
+    pub color: bool,
 }
 
 pub trait JsonOutput {
@@ -125,10 +125,16 @@ fn result_to_row(name: &str, result: &AnalyzerResult) -> Row {
     Row::new(vec![
         Cell::new(name),
         version_to_cell(result),
-        if result.outdated() {
-            Cell::new_align("Outdated", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW))
-        } else {
-            Cell::new_align("Latest", Alignment::CENTER).with_style(Attr::ForegroundColor(color::GREEN))
+        match result.version_state() {
+            VersionState::Latest => {
+                Cell::new_align("Latest", Alignment::CENTER).with_style(Attr::ForegroundColor(color::GREEN))
+            }
+            VersionState::Outdated => {
+                Cell::new_align("Outdated", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW))
+            }
+            VersionState::Unknown => {
+                Cell::new_align("Unknown", Alignment::CENTER).with_style(Attr::ForegroundColor(color::YELLOW))
+            }
         },
         if result.vulnerabilities() > 0 {
             Cell::new_align(
@@ -161,6 +167,7 @@ fn summary_to_cell(result: &AnalyzerResult) -> Cell {
     let mut cell = match result.summary() {
         AnalysisSummary::Ok => Cell::new("Ok"),
         AnalysisSummary::Outdated => Cell::new("Outdated").with_style(Attr::ForegroundColor(color::YELLOW)),
+        AnalysisSummary::Unknown => Cell::new("Unknown").with_style(Attr::ForegroundColor(color::YELLOW)),
         AnalysisSummary::Vulnerable => Cell::new("Vulnerable").with_style(Attr::ForegroundColor(color::RED)),
         AnalysisSummary::Failed => Cell::new("Failed").with_style(Attr::ForegroundColor(color::RED)),
     };

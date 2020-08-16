@@ -51,7 +51,7 @@ The project home page currently is *https://github.com/lukaspustina/wpscan-analy
 
 # EXIT STATUS
 
-If wpscan-analyze does not find any issue, then the exit status of the program is 0. The exit states 11, 12, and 13 signal that wpscan-analyze has encountered a vulnerability, an outdated element, or a processing failure, respectively. Any other exit status signals an error.
+If wpscan-analyze does not find any issue, then the exit status of the program is 0. The exit states 11, 12, and 13 signal that wpscan-analyze has encountered a vulnerability, an outdated element, or a processing failure, respectively. Exit status 14 signals that the analysis is inconclusive, because elements with unknown versions have been found. It is up to the user to assess what this means in his specific situation. Any other exit status signals an error.
 
 
 # COPYRIGHT AND LICENSE

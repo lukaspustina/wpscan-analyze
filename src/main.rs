@@ -1,18 +1,6 @@
-use clams;
-use log;
-use structopt;
 use wpscan_analyze::{
-    default_analysis,
-    errors::*,
-    AnalysisSummary,
-    FromFile,
-    OutputConfig,
-    OutputDetail,
-    OutputFormat,
-    SanityCheck,
-    Summary,
-    WpScan,
-    WpScanAnalysis,
+    default_analysis, errors::*, AnalysisSummary, FromFile, OutputConfig, OutputDetail, OutputFormat, SanityCheck,
+    Summary, WpScan, WpScanAnalysis,
 };
 
 use clams::prelude::*;
@@ -31,7 +19,7 @@ use structopt::StructOpt;
 struct Args {
     /// wpscan json file
     #[structopt(short = "f", long = "wpscan", parse(from_os_str))]
-    wpscan:        PathBuf,
+    wpscan: PathBuf,
     /// Select output format
     #[structopt(
         short = "o",
@@ -49,13 +37,13 @@ struct Args {
     output_detail: OutputDetail,
     /// Do not use colored output
     #[structopt(long = "no-color")]
-    no_color:      bool,
+    no_color: bool,
     /// Silencium; use this for json output
     #[structopt(short = "s", long = "silent")]
-    silent:        bool,
+    silent: bool,
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
-    verbosity:     u64,
+    verbosity: u64,
 }
 
 fn main() -> Result<()> {
@@ -66,7 +54,7 @@ fn main() -> Result<()> {
     let output_config = OutputConfig {
         detail: args.output_detail,
         format: args.output_format,
-        color:  !args.no_color,
+        color: !args.no_color,
     };
 
     run_wpscan_analyze(&args.wpscan, &output_config, args.silent).map(|code| process::exit(code))
@@ -103,7 +91,10 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
     info!("Loading wpscan file");
     let wpscan = WpScan::from_file(wpscan_file.as_ref())?;
     info!("Checking wpscan results sanity");
-    wpscan.is_sane()?;
+    match wpscan.is_sane() {
+        Ok(_) => {}
+        Err(err) => warn!("{} Continuing but be cautious about the results.", err),
+    }
 
     info!("Analyzing");
     let analyzer_result = default_analysis(&wpscan);
@@ -117,9 +108,11 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
     info!("Summarizing");
     if !silent {
         println!(
-            "Analyzer result summary: {}={}, {}={}, {}={}",
+            "Analyzer result summary: {}={}, {}={}, {}={}, {}={}",
             "outdated".yellow(),
             analyzer_result.outdated(),
+            "unknown".yellow(),
+            analyzer_result.unknown(),
             "vulnerabilities".red(),
             analyzer_result.vulnerabilities(),
             "failed".red(),
@@ -134,6 +127,7 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
         AnalysisSummary::Vulnerable => 11,
         AnalysisSummary::Outdated => 12,
         AnalysisSummary::Failed => 13,
+        AnalysisSummary::Unknown => 14,
     };
 
     Ok(res)

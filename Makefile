@@ -31,22 +31,13 @@ install:
 	cargo install --force
 
 clippy:
-	cargo clippy --workspace --all-targets --all-features -- -D warnings $$(source ".clippy.args")
+	cargo clippy --workspace --all-targets --all-features
 
 fmt:
-	cargo +nightly fmt
+	cargo fmt
 
 duplicate_libs:
 	cargo tree -d
-
-_update-clippy_n_fmt:
-	rustup update
-	rustup component add clippy
-	rustup component add rustfmt
-
-_cargo_install:
-	cargo install -f cargo-tree
-	cargo install -f cargo-bump
 
 .PHONY: tests
 
