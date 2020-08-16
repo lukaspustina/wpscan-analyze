@@ -10,7 +10,7 @@ use std::{collections::HashMap, fmt::Display, fs::File, io::Read, path::Path, st
 
 #[derive(Debug, Deserialize)]
 pub struct WpScan {
-    pub banner:        Banner,
+    pub banner:        Option<Banner>,
     pub start_time:    usize,
     pub stop_time:     usize,
     pub data_sent:     usize,
@@ -144,6 +144,17 @@ mod test {
     #[test]
     fn load_wpscan_results_file() {
         let file = "tests/wpscan-example_com.json";
+
+        let wp_scan = WpScan::from_file(file);
+
+        assert_that(&wp_scan).is_ok();
+        println!("{:#?}", wp_scan.unwrap());
+    }
+
+
+    #[test]
+    fn load_wpscan_results_file_no_banner() {
+        let file = "tests/wpscan-example_com-no_banner.json";
 
         let wp_scan = WpScan::from_file(file);
 
