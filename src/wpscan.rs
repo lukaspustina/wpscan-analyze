@@ -40,7 +40,7 @@ pub struct Version {
 pub struct MainTheme {
     pub latest_version:  Option<String>,
     pub last_updated:    Option<String>,
-    pub outdated:        bool,
+    pub outdated:        Option<bool>,
     pub vulnerabilities: Option<serde_json::Value>,
     pub version:         Option<Version>,
 }
@@ -50,7 +50,7 @@ pub struct Plugin {
     pub slug:            String,
     pub latest_version:  Option<String>,
     pub last_updated:    Option<String>,
-    pub outdated:        bool,
+    pub outdated:        Option<bool>,
     pub vulnerabilities: Option<serde_json::Value>,
     pub version:         Option<Version>,
 }

@@ -26,10 +26,10 @@ wpscan-analyze version=0.0.2, log level=Level(Warn)
 | WordPress                | 4.9.10  |    Latest     | No vulnerabilities |     Ok     |     Ok     |
 | Main Theme               | 3.2.1   |    Latest     | No vulnerabilities |     Ok     |     Ok     |
 | Plugin: wp-super-cache   | 1.6.3   |   Outdated    | No vulnerabilities |     Ok     |  Outdated  |
-| Plugin: wordpress-seo    | 8.0     |   Outdated    | 1 vulnerabilities  |     Ok     | Vulnerable |
+| Plugin: wp-super-cache   | -       |    Unknown    | No vulnerabilities |     Ok     |  Unknown   |
 | Plugin: jm-twitter-cards | 9.4     |   Outdated    | No vulnerabilities |     Ok     |  Outdated  |
 +--------------------------+---------+---------------+--------------------+------------+------------+
-Analyzer result summary: outdated=3, vulnerabilities=1, failed=0
+Analyzer result summary: outdated=2, unknown=1, vulnerabilities=1, failed=0
 ```
 
 #### Exit codes
@@ -43,6 +43,7 @@ Error => 1 or other
 Vulnerable => 11  
 Outdated => 12  
 Failed => 13  
+Unknown => 14  
 
 ### Help
 

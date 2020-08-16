@@ -120,9 +120,11 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
     info!("Summarizing");
     if !silent {
         println!(
-            "Analyzer result summary: {}={}, {}={}, {}={}",
+            "Analyzer result summary: {}={}, {}={}, {}={}, {}={}",
             "outdated".yellow(),
             analyzer_result.outdated(),
+            "unknown".yellow(),
+            analyzer_result.unknown(),
             "vulnerabilities".red(),
             analyzer_result.vulnerabilities(),
             "failed".red(),
@@ -135,8 +137,9 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
     let res = match summary {
         AnalysisSummary::Ok => 0,
         AnalysisSummary::Vulnerable => 11,
-        AnalysisSummary::Outdated => 12,
+        AnalysisSummary::Outdated  => 12,
         AnalysisSummary::Failed => 13,
+        AnalysisSummary::Unknown => 14,
     };
 
     Ok(res)
