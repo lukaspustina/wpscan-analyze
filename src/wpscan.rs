@@ -151,7 +151,6 @@ mod test {
         println!("{:#?}", wp_scan.unwrap());
     }
 
-
     #[test]
     fn load_wpscan_results_file_no_banner() {
         let file = "tests/wpscan-example_com-no_banner.json";

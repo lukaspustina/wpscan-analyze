@@ -272,7 +272,7 @@ impl<'a> Summary for WpScanAnalysis<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::WPSCAN_TEST_DATA;
+    use crate::tests::{WPSCAN_TEST_DATA, WPSCAN_TEST_DATA_NO_WP_VERSION};
 
     use spectral::prelude::*;
 
@@ -403,5 +403,20 @@ mod tests {
         asserting("Ok")
             .that(&result.summary())
             .is_equal_to(AnalysisSummary::Failed);
+    }
+
+
+    #[test]
+    fn analysis_no_wp_version() {
+        let wpscan = WPSCAN_TEST_DATA_NO_WP_VERSION();
+
+        let analyzer = DefaultAnalyzer::new(&wpscan);
+        let analysis = analyzer.analyze();
+
+        asserting("vulnerabilities")
+            .that(&analysis.vulnerabilities())
+            .is_equal_to(1);
+        asserting("outdated").that(&analysis.outdated()).is_equal_to(3);
+        asserting("failed").that(&analysis.failed()).is_equal_to(1);
     }
 }

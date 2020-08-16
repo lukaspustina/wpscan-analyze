@@ -103,7 +103,10 @@ fn run_wpscan_analyze<T: AsRef<Path>>(wpscan_file: T, output_config: &OutputConf
     info!("Loading wpscan file");
     let wpscan = WpScan::from_file(wpscan_file.as_ref())?;
     info!("Checking wpscan results sanity");
-    wpscan.is_sane()?;
+    match wpscan.is_sane() {
+        Ok(_) => {},
+        Err(err) => warn!("{} Continuing but be cautious about the results.", err),
+    }
 
     info!("Analyzing");
     let analyzer_result = default_analysis(&wpscan);

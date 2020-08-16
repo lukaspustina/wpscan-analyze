@@ -19,4 +19,11 @@ mod tests {
 
         WpScan::from_str(&wp_file).unwrap()
     }
+
+    #[allow(non_snake_case)]
+    pub(crate) fn WPSCAN_TEST_DATA_NO_WP_VERSION() -> WpScan {
+        let wp_file = include_str!("../tests/wpscan-example_com-no_wp_version.json");
+
+        WpScan::from_str(&wp_file).unwrap()
+    }
 }
