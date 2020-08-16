@@ -19,25 +19,24 @@ touch "wpscan-analayze-install-$(date)" && rm -f "wpscan-analayze-install-*"
 echo "[INFO] wpscan-analyze install script for MacOS and Linux"
 
 # Determine latest version based on lastest git tag with github api
-raw_version=`curl --silent "https://api.github.com/repos/lukaspustina/wpscan-analyze/releases/latest" | grep tag_name | sed -E 's/.*"v(.*)",/\1/'`
+raw_version=$(curl --silent "https://api.github.com/repos/lukaspustina/wpscan-analyze/releases/latest" | grep tag_name | sed -E 's/.*"v(.*)",/\1/')
 version="v${raw_version}"
 
 old_install=""
 old_install_version=""
 if which wpscan-analyze > /dev/null 2>&1; then
-    old_install=`which wpscan-analyze`
-    old_install_version=`wpscan-analyze --version`
+    old_install=$(which wpscan-analyze)
+    old_install_version=$(wpscan-analyze --version)
     echo "[INFO] wpscan-analyze in already installed: ${old_install} (${old_install_version})"
     echo "[INFO] The script will remove this installation"
 fi
 if [ ! -z "${old_install}" ] && [ "${old_install_version}" = "wpscan-analyze ${raw_version}" ]; then
-    echo "[ERROR] You already have the latest wpscan-analyze version. If you're looking for the dev version please install it manually."
-    exit 1
+    echo "[INFO] You already have the latest wpscan-analyze version. If you're looking for the dev version please install it manually."
 fi
 echo "[INFO] Latest version is ${raw_version}"
 # Ask to build from source ?
 echo "[QUESTION] Do you want to build latest wpscan-analyze version from source ?"
-echo "[QUESTION] Answer No to download binary from github and copy it to ${install_to} (You'll be asked if you want to change the install path) [y/n/cancel]"
+echo "[QUESTION] Answer No to download binary from github and copy it to ${install_to} (You'll be asked to confirm the install path) [y/n/cancel]"
 REPLY=$(sed 1q)
 if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
     #Cleaning git repo
@@ -49,14 +48,18 @@ if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY
     fi
     cd wpscan-analyze
     echo "[INFO] Checkout latest stable version"
-    git checkout --quiet ${version}
+    git checkout --quiet "${version}"
     if ! which cargo > /dev/null 2>&1; then
         echo "[QUESTION] Cargo is not detected. Do you want install Rust environment? [y/n]"
         REPLY=$(sed 1q)
         if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
             sleep 1
-            source $HOME/.cargo/env
+            # According to https://github.com/koalaman/shellcheck/wiki/SC1090
+            # ERROR: SC1090: Can't follow non-constant source. Use a directive to specify locationn
+            # Is fixed by:
+            # shellcheck source=$("$HOME")/.cargo/env
+            . "$HOME/.cargo/env"
         else
             echo "Canceled"
             exit 1
@@ -98,8 +101,8 @@ else
         echo "[INFO] Downloading wpscan-analyze ${version} $(uname -m) $(uname) binary"
 
         # CLeaning before downloading binary
-        rm "${filename}.gz" 2>/dev/null || true
-        rm "${filename}" 2>/dev/null || true
+        rm -f "${filename}.gz"  2>/dev/null || true
+        rm -f "${filename}"  2>/dev/null || true
 
         # Get binary file
 
@@ -113,26 +116,34 @@ else
         if [ ! -z "${old_install}" ]; then
             echo "[INFO] Removing old install ${old_install}"
             if ! cargo uninstall wpscan-analyze > /dev/null 2>&1; then
-                rm -rf "${old_install}"
+                rm -rf "${old_install}" 
             fi
         fi
 
-        echo "[QUESTION] Do you want to change the install directory? Default to ${install_to} [y/n]"
+        echo "[QUESTION] Set installation path. Press ENTER to skip and use default: [${install_to}]"
         REPLY=$(sed 1q)
-        if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
-            echo "[QUESTION] Type the new full path to install directory:"
-            REPLY=$(sed 1q)
+        if [ ! -z "$REPLY" ]; then
+            pwd_i=$(pwd)
+            cd "$REPLY"
+            touch "write-permissions-test.txt" && rm -f "write-permissions-test.txt"
+            echo "$PATH" > "PATH.txt"
+            if ! grep -q "$REPLY" "PATH.txt"; then
+                echo "[WARNING] ${REPLY} is not in your PATH. Your PATH is $(cat PATH.txt)"
+                echo "[INFO] Add a shorcut in your PATH or use the full '$(pwd)/wpscan-analyze'. "
+            fi
+            rm -f "PATH.txt"
             install_to="$REPLY"
-            binary_file="${install_to}/wpscan-analyze"
+            cd "$pwd_i"
         fi
-        
+        binary_file="${install_to}/wpscan-analyze"
         # Copy file
         echo "[INFO] Copying binary from $(pwd)/${filename} to ${binary_file}"
-        rm "${binary_file}" 2>/dev/null || true
+        # Clean just in case
+        rm -f "${binary_file}"  2>/dev/null || true
         cp "${filename}" "${binary_file}"
 
         # Make the file executable
-        chmod +x ${binary_file}
+        chmod +x "${binary_file}"
         echo "[INFO] Uninstall with: 'rm ${binary_file}'"
     
     else
