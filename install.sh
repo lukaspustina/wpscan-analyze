@@ -1,6 +1,12 @@
 #!/bin/sh
+#
 # wpscan-analyze install script for MacOS and Linux.
-# This script will download, unzip and install binary file to /usr/local/bin/
+#
+# This script will download, unzip and install binary file
+# Or install wpscan-analyze from source
+#
+# Usage: "curl -s https://raw.githubusercontent.com/lukaspustina/wpscan-analyze/master/install.sh | sh"
+#
 # Script requirement: wget
 # More infos https://github.com/lukaspustina/wpscan-analyze
 
@@ -22,6 +28,7 @@ echo "[INFO] wpscan-analyze install script for MacOS and Linux"
 raw_version=$(curl --silent "https://api.github.com/repos/lukaspustina/wpscan-analyze/releases/latest" | grep tag_name | sed -E 's/.*"v(.*)",/\1/')
 version="v${raw_version}"
 
+# Check if wpscan-analyze is already installed
 old_install=""
 old_install_version=""
 if which wpscan-analyze > /dev/null 2>&1; then
@@ -55,8 +62,9 @@ if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY
         # Reading from tty
         read REPLY < /dev/tty
         if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
+            # Installing rust
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-            sleep 1
+            sleep 2
             # According to https://github.com/koalaman/shellcheck/wiki/SC1090
             # ERROR: SC1090: Can't follow non-constant source. Use a directive to specify locationn
             # Is fixed by:
@@ -110,6 +118,7 @@ else
 
         if ! wget --quiet "https://github.com/lukaspustina/wpscan-analyze/releases/download/${version}/${filename}.gz"; then
             echo "[ERROR] Make sure 'wget' is installed on your system and your have internet"
+            exit 1
         fi
 
         # Unzip it
