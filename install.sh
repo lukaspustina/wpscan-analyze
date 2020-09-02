@@ -36,8 +36,9 @@ fi
 echo "[INFO] Latest version is ${raw_version}"
 # Ask to build from source ?
 echo "[QUESTION] Do you want to build latest wpscan-analyze version from source ?"
-echo "[QUESTION] Answer No to download binary from github and copy it to ${install_to} (You'll be asked to confirm the install path) [y/n/cancel]"
-REPLY=$(sed 1q)
+echo "[QUESTION] Answer No to download binary from github and place it in ${install_to} (You'll be asked to confirm the install path) [y/n/cancel]"
+# Reading from tty
+read REPLY < /dev/tty
 if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
     #Cleaning git repo
     rm -rf wpscan-analyze
@@ -50,8 +51,9 @@ if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY
     echo "[INFO] Checkout latest stable version"
     git checkout --quiet "${version}"
     if ! which cargo > /dev/null 2>&1; then
-        echo "[QUESTION] Cargo is not detected. Do you want install Rust environment? [y/n]"
-        REPLY=$(sed 1q)
+        echo "[QUESTION] Cargo is not detected. Do you want install Rust environment? No will cancel installation. [y/n]"
+        # Reading from tty
+        read REPLY < /dev/tty
         if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ] || [ "$REPLY" = "Y" ] || [ "$REPLY" = "Yes" ]; then
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
             sleep 1
@@ -121,7 +123,8 @@ else
         fi
 
         echo "[QUESTION] Set installation path. Press ENTER to skip and use default: [${install_to}]"
-        REPLY=$(sed 1q)
+        # Reading from tty
+        read REPLY < /dev/tty
         if [ ! -z "$REPLY" ]; then
             pwd_i=$(pwd)
             cd "$REPLY"
