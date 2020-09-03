@@ -60,16 +60,28 @@ curl -s https://packagecloud.io/install/repositories/lukaspustina/opensource/scr
 sudo apt-get install wpscan-analyze
 ```
 
-### Install script
+### Install script [All Unix platforms]
 
 **Simply run:**  
 ```bash
 curl -s https://raw.githubusercontent.com/lukaspustina/wpscan-analyze/master/install.sh | sh
 ```
+
 The script will ask you if you want to install `wpscan-analyzer` from source OR from binaries from [release page](https://github.com/lukaspustina/wpscan-analyze/releases) (Linux binary is compilied with Ubuntu). 
 
 If you don't use Ubuntu linux or MacOs , you'll probably have to build the software from source.  
-If you use a non x86_64 processor, you'll have to build the software from source.
+If you use a non x86_64 processor, you must build the software from source.
+
+### Manually
+
+Install Rust environment and run:  
+```bash
+git clone https://github.com/lukaspustina/wpscan-analyze.git
+cd wpscan-analyze
+cargo install --path .
+cd ..
+wpscan-analyze --version
+```
 
 ### Docker
 
